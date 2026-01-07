@@ -299,7 +299,7 @@ export default function Home() {
           <View className="mt-6">
             <View className="flex-row items-center gap-2 px-4 mb-3">
               <Ionicons name="calendar" size={22} color="#3B82F6" />
-              <Text className="text-white text-xl font-bold">Upcoming Events</Text>
+              <Text className="text-white text-xl font-bold">Upcoming Events & Hangouts</Text>
               {upcomingEvents.length > 0 && (
                 <View className="bg-blue-600/20 px-2 py-1 rounded-full">
                   <Text className="text-blue-400 text-xs font-semibold">{upcomingEvents.length}</Text>

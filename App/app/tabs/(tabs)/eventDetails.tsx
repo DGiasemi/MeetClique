@@ -435,39 +435,23 @@ export default function EventDetails() {
                         // Owners see Edit Event button instead
                         if (isOwner) {
                             return (
-                                <>
+                                <View className="flex-row gap-3">
                                     <TouchableOpacity
-                                        className="py-4 rounded-lg items-center bg-blue-600 mb-3"
+                                        className="flex-1 py-4 rounded-lg items-center bg-purple-600"
                                         onPress={() => {
-                                            // TODO: Navigate to edit event screen
                                             setIsEditing(true);
                                         }}
                                     >
-                                        <View className="flex-row items-center gap-2">
-                                            <Ionicons name="create-outline" size={20} color="white" />
-                                            <Text className="text-white text-lg font-bold">
-                                                Edit Event
-                                            </Text>
-                                        </View>
+                                        <Text className="text-white text-lg font-bold">Edit Event</Text>
                                     </TouchableOpacity>
-                                    <View className="flex-row gap-3">
-                                        <TouchableOpacity
-                                            className="flex-1 py-4 rounded-lg items-center bg-purple-600"
-                                            onPress={() => {
-                                                setIsEditing(true);
-                                            }}
-                                        >
-                                            <Text className="text-white text-lg font-bold">Edit Event</Text>
-                                        </TouchableOpacity>
 
-                                        <TouchableOpacity
-                                            className="flex-1 py-4 rounded-lg items-center bg-red-600"
-                                            onPress={handleDelete}
-                                        >
-                                            <Text className="text-white text-lg font-bold">Delete Event</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </>
+                                    <TouchableOpacity
+                                        className="flex-1 py-4 rounded-lg items-center bg-red-600"
+                                        onPress={handleDelete}
+                                    >
+                                        <Text className="text-white text-lg font-bold">Delete Event</Text>
+                                    </TouchableOpacity>
+                                </View>
                             );
                         }
 

@@ -144,7 +144,8 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                 locationId = location.id;
             }
 
-            if (typeof locationId === 'string' && locationId.startsWith('nominatim_')) {
+            // Only create backend Location when the selected place originates from Nominatim (has raw data)
+            if (typeof locationId === 'string' && locationId.startsWith('nominatim_') && location && location.raw) {
                 try {
                     const createPayload = {
                         name: location.name || location.address,

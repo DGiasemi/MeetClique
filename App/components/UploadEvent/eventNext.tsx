@@ -28,7 +28,8 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
         // If location comes from Nominatim (external), create it in backend first
         let locationId = location && (location._id || location.id);
         try {
-            if (locationId && typeof locationId === 'string' && locationId.startsWith('nominatim_')) {
+            // Only create backend Location when the selected place originates from Nominatim (has raw data)
+            if (locationId && typeof locationId === 'string' && locationId.startsWith('nominatim_') && location && location.raw) {
                 const createPayload = {
                     name: location.name || location.address,
                     address: location.address || location.name,

@@ -6,7 +6,7 @@ import { TextInput } from "react-native-gesture-handler";
 import { getAuth } from "@/utils/request";
 import { useRouter } from "expo-router";
 import * as Location from 'expo-location';
-import AddLocation from "./addLocation";
+// AddLocation UI removed: only search is available now
 
 export default function SearchLocation({ setLocation, goback }: { setLocation: (location: any) => void, goback: () => void }) {
 
@@ -14,7 +14,7 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
     const [defaultLocations, setDefaultLocations] = useState<Array<any>>([]);
     const [locationValue, setLocationValue] = useState<string>('');
     const [locations, setLocations] = useState<Array<any>>([]);
-    const [addLocation, setAddLocation] = useState<boolean>(false);
+    
     const [isSearching, setIsSearching] = useState<boolean>(false);
     const router = useRouter();
 
@@ -172,17 +172,7 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
         return () => clearTimeout(delaySearch);
     }, [locationValue]);
 
-    if (addLocation) {
-        return (
-            <AddLocation
-                setLocation={(loc: any) => {
-                    setLocation(loc);
-                    setAddLocation(false);
-                }}
-                goback={() => setAddLocation(false)}
-            />
-        );
-    }
+    // Note: manual "Add Location" flow removed — user must pick from search results.
 
     return (
         <View className="h-full bg-background">
@@ -204,16 +194,10 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
 
                 <View className="flex-1 items-center">
                     <Text className="text-white text-2xl font-bold">Search Location</Text>
-                    <Text className="text-gray-400 text-xs mt-0.5">Find or create a place</Text>
+                    <Text className="text-gray-400 text-xs mt-0.5">Find the place you need here</Text>
                 </View>
 
-                <TouchableOpacity
-                    onPress={() => setAddLocation(true)}
-                    className="w-10 h-10 rounded-full bg-purple-600 items-center justify-center"
-                    style={{ elevation: 4 }}
-                >
-                    <Ionicons name="add" size={24} color="white" />
-                </TouchableOpacity>
+                <View style={{ width: 40 }} />
             </View>
 
             <Animated.View
