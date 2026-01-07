@@ -411,21 +411,24 @@ export default function Profile({ userId, isUsersProfile = false, onBack }: { us
                         <View className="flex-row px-4 mb-4 gap-2">
                             <TouchableOpacity
                                 onPress={() => setActiveTab('myEvents')}
-                                className={`flex-1 py-3 rounded-xl border ${activeTab === 'myEvents'
-                                    ? 'bg-blue-600 border-blue-500'
-                                    : 'bg-gray-800/30 border-gray-700/50'
-                                    }`}
+                                style={{
+                                    flex: 1,
+                                    paddingVertical: 12,
+                                    borderRadius: 12,
+                                    borderWidth: 1,
+                                    backgroundColor: activeTab === 'myEvents' ? '#eb3678' : undefined,
+                                    borderColor: activeTab === 'myEvents' ? '#eb3678' : 'rgba(55,65,81,0.5)'
+                                }}
                                 activeOpacity={0.8}
                             >
                                 <View className="flex-row items-center justify-center gap-2">
                                     <Ionicons
                                         name="calendar"
                                         size={20}
-                                        color={activeTab === 'myEvents' ? '#FFFFFF' : '#3B82F6'}
+                                        color={activeTab === 'myEvents' ? '#FFFFFF' : '#eb3678'}
                                     />
                                     <Text
-                                        className={`font-bold ${activeTab === 'myEvents' ? 'text-white' : 'text-blue-500'
-                                            }`}
+                                        style={{ fontWeight: '700', color: activeTab === 'myEvents' ? '#FFFFFF' : '#eb3678' }}
                                     >
                                         {isUsersProfile ? 'My Events' : 'Events'}
                                     </Text>
@@ -434,21 +437,24 @@ export default function Profile({ userId, isUsersProfile = false, onBack }: { us
 
                             <TouchableOpacity
                                 onPress={() => setActiveTab('attending')}
-                                className={`flex-1 py-3 rounded-xl border ${activeTab === 'attending'
-                                    ? 'bg-green-600 border-green-500'
-                                    : 'bg-gray-800/30 border-gray-700/50'
-                                    }`}
+                                style={{
+                                    flex: 1,
+                                    paddingVertical: 12,
+                                    borderRadius: 12,
+                                    borderWidth: 1,
+                                    backgroundColor: activeTab === 'attending' ? '#eb3678' : undefined,
+                                    borderColor: activeTab === 'attending' ? '#eb3678' : 'rgba(55,65,81,0.5)'
+                                }}
                                 activeOpacity={0.8}
                             >
                                 <View className="flex-row items-center justify-center gap-2">
                                     <Ionicons
                                         name="people"
                                         size={20}
-                                        color={activeTab === 'attending' ? '#FFFFFF' : '#10B981'}
+                                        color={activeTab === 'attending' ? '#FFFFFF' : '#eb3678'}
                                     />
                                     <Text
-                                        className={`font-bold ${activeTab === 'attending' ? 'text-white' : 'text-green-500'
-                                            }`}
+                                        style={{ fontWeight: '700', color: activeTab === 'attending' ? '#FFFFFF' : '#eb3678' }}
                                     >
                                         Attending
                                     </Text>

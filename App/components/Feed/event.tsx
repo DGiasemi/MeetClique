@@ -131,11 +131,11 @@ export default function Event({ event, showTop = true }: { event: any, showTop?:
                                 <Text className="text-white font-bold text-sm">Hangout</Text>
                             </View>
                         ) : (
-                            <View className={`px-3 py-1.5 rounded-full shadow-lg ${event?.price === 0 ? "bg-yellow-400" : "bg-emerald-500"}`}>
-                                <Text className="text-black font-bold text-sm">
-                                    {event?.price === 0 ? "FREE" : `$${event?.price}`}
-                                </Text>
-                            </View>
+                            (event?.price && Number(event.price) > 0) ? (
+                                <View style={{ backgroundColor: '#FFFFFF' }} className={`px-3 py-1.5 rounded-full shadow-lg`}>
+                                    <Text style={{ color: '#eb3678' }} className="font-bold text-sm">{`€${event.price}`}</Text>
+                                </View>
+                            ) : null
                         )}
                     </View>
 
@@ -163,8 +163,7 @@ export default function Event({ event, showTop = true }: { event: any, showTop?:
                     {/* Attending/Owner badge */}
                     {(isAttending || event?.userID === currentUserId) && (
                         <View className="absolute bottom-3 right-3">
-                            <View className={`px-3 py-1.5 rounded-full backdrop-blur-sm shadow-lg ${getEventUserId() === currentUserId ? 'bg-yellow-500/90' : 'bg-purple-600/90'
-                                }`}>
+                            <View className={`px-3 py-1.5`}>
                                 <View className="flex-row items-center gap-1.5">
                                     <Ionicons
                                         name={getEventUserId() === currentUserId ? "star" : "checkmark-circle"}

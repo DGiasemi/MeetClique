@@ -5,6 +5,7 @@ import EventNext from "./eventNext";
 import { TextInput } from "react-native-gesture-handler";
 import SearchLocation from "../Location/searchLocation";
 import { Ionicons } from "@expo/vector-icons";
+import { Theme } from '@/constants/Theme';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { postAuth, putAuth } from "@/utils/request";
@@ -281,10 +282,16 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
             <View className="border-b border-gray-700/50 bg-gray-800/30">
                 <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
                     <View className="flex-row items-center gap-3">
-                        <View className="bg-blue-600/20 p-2 rounded-full">
-                            <Ionicons name={editEvent ? "create-outline" : "calendar-outline"} size={24} color="#3B82F6" />
-                        </View>
-                        <Text className="text-white text-xl font-bold">{editEvent ? "Edit" : "Create"}</Text>
+                        {editEvent ? (
+                            <>
+                                <View className="bg-blue-600/20 p-2 rounded-full">
+                                    <Ionicons name={"create-outline"} size={24} color="#3B82F6" />
+                                </View>
+                                <Text className="text-white text-xl font-bold">Edit</Text>
+                            </>
+                        ) : (
+                            <></>
+                        )}
                     </View>
                     <View className="flex-row items-center gap-3">
                         <TouchableOpacity
@@ -315,10 +322,10 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                 <View className='w-full'>
                     {/* Type Toggle */}
                     <View className="w-full rounded-xl bg-gray-800/40 border border-gray-700/30 px-2 py-2 mb-3 flex-row items-center gap-2">
-                        <TouchableOpacity onPress={() => { if (type !== 'event') { setType('event'); } }} className={`flex-1 px-3 py-2 rounded-md ${type === 'event' ? 'bg-blue-600' : 'bg-transparent'}`}>
+                        <TouchableOpacity onPress={() => { if (type !== 'event') { setType('event'); } }} className={`flex-1 px-3 py-2 rounded-md`} style={type === 'event' ? { backgroundColor: Theme.accent } : undefined}>
                             <Text className={`${type === 'event' ? 'text-white' : 'text-gray-300'} text-center font-semibold`}>Event</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { if (type !== 'hangout') { setType('hangout'); setPrice(''); setEndTime(null); } }} className={`flex-1 px-3 py-2 rounded-md ${type === 'hangout' ? 'bg-blue-600' : 'bg-transparent'}`}>
+                        <TouchableOpacity onPress={() => { if (type !== 'hangout') { setType('hangout'); setPrice(''); setEndTime(null); } }} className={`flex-1 px-3 py-2 rounded-md`} style={type === 'hangout' ? { backgroundColor: Theme.accent } : undefined}>
                             <Text className={`${type === 'hangout' ? 'text-white' : 'text-gray-300'} text-center font-semibold`}>Hangout</Text>
                         </TouchableOpacity>
                     </View>
@@ -374,8 +381,8 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                     {type === 'event' && (
                         <View className="w-full rounded-xl bg-gray-800/50 border border-gray-700/50 px-4 py-3 mb-4">
                             <View className="flex-row items-center gap-2 mb-2">
-                                <Ionicons name="pricetag-outline" size={18} color="#10B981" />
-                                <Text className="text-gray-300 text-sm font-semibold">Price (USD)</Text>
+                                <Ionicons name="pricetag-outline" size={18} color="#3B82F6" />
+                                <Text className="text-gray-300 text-sm font-semibold">Price (EUR)</Text>
                             </View>
                             <TextInput
                                 className="w-full text-white text-base px-0 py-1"
@@ -407,8 +414,8 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
 
                     {/* Start Time */}
                     <View className="w-full rounded-xl bg-gray-800/50 border border-gray-700/50 px-4 py-3 mb-4">
-                        <View className="flex-row items-center gap-2 mb-2">
-                            <Ionicons name="calendar-outline" size={18} color="#10B981" />
+                            <View className="flex-row items-center gap-2 mb-2">
+                            <Ionicons name="calendar-outline" size={18} color="#3B82F6" />
                             <Text className="text-gray-300 text-sm font-semibold">Start Time *</Text>
                         </View>
                         <TouchableOpacity
@@ -416,7 +423,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                             onPress={() => setShowStartPicker(true)}
                             activeOpacity={0.7}
                         >
-                            <Ionicons name="time-outline" size={20} color="#10B981" />
+                            <Ionicons name="time-outline" size={20} color="#3B82F6" />
                             <Text className='text-white text-base'>
                                 {startTime.toLocaleString('en-US', {
                                     month: 'short',
@@ -480,7 +487,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                     {itemType === 'event' && (
                         <View className="w-full rounded-xl bg-gray-800/50 border border-gray-700/50 px-4 py-3 mb-4">
                             <View className="flex-row items-center gap-2 mb-2">
-                                <Ionicons name="calendar-outline" size={18} color="#EF4444" />
+                                <Ionicons name="calendar-outline" size={18} color="#3B82F6" />
                                 <Text className="text-gray-300 text-sm font-semibold">End Time (Optional)</Text>
                             </View>
                             <TouchableOpacity
@@ -488,7 +495,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                                 onPress={() => setShowEndPicker(true)}
                                 activeOpacity={0.7}
                             >
-                                <Ionicons name="time-outline" size={20} color="#EF4444" />
+                                <Ionicons name="time-outline" size={20} color="#3B82F6" />
                                 <Text className='text-white text-base'>
                                     {endTime ? endTime.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'No end time set'}
                                 </Text>
@@ -538,7 +545,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                     {/* Location */}
                     <View className="w-full rounded-xl bg-gray-800/50 border border-gray-700/50 px-4 py-3">
                         <View className="flex-row items-center gap-2 mb-2">
-                            <Ionicons name="location-outline" size={18} color="#8B5CF6" />
+                            <Ionicons name="location-outline" size={18} color="#3B82F6" />
                             <Text className="text-gray-300 text-sm font-semibold">Location {itemType === 'hangout' ? '(Optional)' : '*'}</Text>
                         </View>
                         <TouchableOpacity
@@ -547,7 +554,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                             activeOpacity={0.7}
                         >
                             <View className="flex-row items-center gap-3">
-                                <Ionicons name="pin" size={20} color="#8B5CF6" />
+                                <Ionicons name="pin" size={20} color="#3B82F6" />
                                 <Text className='text-white text-base'>{location?.name || (type === 'hangout' ? 'Optional' : 'Select location')}</Text>
                             </View>
                             <Ionicons name="chevron-forward" size={20} color="#6B7280" />
@@ -557,7 +564,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                     {/* City */}
                     <View className="w-full rounded-xl bg-gray-800/50 border border-gray-700/50 px-4 py-3 mt-4">
                         <View className="flex-row items-center gap-2 mb-2">
-                            <Ionicons name="business" size={18} color="#8B5CF6" />
+                            <Ionicons name="business" size={18} color="#3B82F6" />
                             <Text className="text-gray-300 text-sm font-semibold">City *</Text>
                         </View>
                         <TouchableOpacity

@@ -1,6 +1,7 @@
 import { Image, Text, TouchableOpacity, View, ScrollView, BackHandler } from "react-native";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { Theme } from '@/constants/Theme';
 import log from "@/utils/logger";
 import { postAuth } from "@/utils/request";
 import { useRouter } from "expo-router";
@@ -100,7 +101,7 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
     return (
         <View className="h-full bg-background">
             {/* Header */}
-            <View className="border-b border-gray-700/50 bg-gray-800/30">
+            <View className="border-b border-gray-700/50" style={{ backgroundColor: Theme.accent }}>
                 <View className="flex-row items-center justify-between px-4 pt-4 pb-3">
                     <View className="flex-row items-center gap-2">
                         <TouchableOpacity onPress={goback} className="p-2 -ml-2" activeOpacity={0.7}>
@@ -111,7 +112,8 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
 
                     <TouchableOpacity
                         onPress={handleUpload}
-                        className="bg-blue-600 px-4 py-2 rounded-full flex-row items-center gap-2"
+                        className="bg-accent-500 px-4 py-2 rounded-full flex-row items-center gap-2"
+                        style={{ backgroundColor: Theme.accent }}
                         activeOpacity={0.8}
                     >
                         <Text className="text-white font-bold text-sm">Post</Text>
@@ -137,9 +139,11 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
                                 Hangout
                             </Text>
                         ) : (
-                            <Text className={`absolute top-4 right-4 font-bold px-3 py-2 rounded-full text-sm ${price ? (price === '0' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-black') : 'bg-yellow-500 text-black'}`}>
-                                {price && price !== '0' ? `$${price}` : 'Free'}
-                            </Text>
+                            (price && price !== '0') ? (
+                                <Text style={{ position: 'absolute', top: 16, right: 16, backgroundColor: '#FFFFFF' }} className={`font-bold px-3 py-2 rounded-full text-sm`}>
+                                    <Text style={{ color: '#eb3678' }}>{`€${price}`}</Text>
+                                </Text>
+                            ) : null
                         )}
                     </View>
 
@@ -179,7 +183,7 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
                                 <View className="flex-1">
                                     <Text className="text-gray-400 text-xs mb-0.5">Price</Text>
                                     <Text className='text-white font-semibold'>
-                                        {price ? `$${price}` : "Free"}
+                                        {price ? `€${price}` : "Free"}
                                     </Text>
                                 </View>
                             </View>

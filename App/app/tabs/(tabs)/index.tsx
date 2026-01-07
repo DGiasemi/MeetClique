@@ -219,8 +219,8 @@ export default function Home() {
       <View className="border-b border-gray-700/50 bg-gray-800/30" style={{ position: 'relative' }}>
         <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
           <View className="flex-row items-center gap-3">
-            <View className="bg-blue-600/20 p-2 rounded-full">
-              <Ionicons name="location" size={24} color="#3B82F6" />
+            <View className="bg-[#eb3678]/20 p-2 rounded-full">
+              <Ionicons name="location" size={24} color="#eb3678" />
             </View>
             <TouchableOpacity onPress={() => setShowCityPicker(!showCityPicker)} className="flex-row items-center">
               <Text className="text-white text-2xl font-bold mr-2">{city}</Text>
@@ -298,7 +298,7 @@ export default function Home() {
           {/* Upcoming Events Section */}
           <View className="mt-6">
             <View className="flex-row items-center gap-2 px-4 mb-3">
-              <Ionicons name="calendar" size={22} color="#3B82F6" />
+              <Ionicons name="calendar" size={22} color="#eb3678" />
               <Text className="text-white text-xl font-bold">Upcoming Events & Hangouts</Text>
               {upcomingEvents.length > 0 && (
                 <View className="bg-blue-600/20 px-2 py-1 rounded-full">

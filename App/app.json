@@ -51,6 +51,10 @@
         "projectId": "40b89223-defa-4b2a-9d64-403afb511cfb"
       }
     },
+    "splash": {
+      "image": "./assets/images/logo-splash.svg",
+      "backgroundColor": "#ffffff"
+    },
     "owner": "eventsApp"
   }
 }

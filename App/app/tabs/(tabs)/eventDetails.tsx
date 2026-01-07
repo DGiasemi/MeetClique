@@ -342,9 +342,11 @@ export default function EventDetails() {
                             Hangout
                         </Text>
                     ) : (
-                        <Text className={`absolute top-4 right-4 font-bold px-3 py-2 rounded-full text-sm ${event.price === 0 ? "bg-yellow-500 text-black" : "bg-green-500 text-black"}`}>
-                            {event.price === 0 ? "Free" : `$${event.price}`}
-                        </Text>
+                        (event.price && Number(event.price) > 0) ? (
+                            <Text style={{ position: 'absolute', top: 16, right: 16, backgroundColor: '#FFFFFF' }} className={`font-bold px-3 py-2 rounded-full text-sm`}>
+                                <Text style={{ color: '#eb3678' }}>{`€${event.price}`}</Text>
+                            </Text>
+                        ) : null
                     )}
                 </View>
 
@@ -376,7 +378,8 @@ export default function EventDetails() {
                                     </Text>
                                 </View>
                             ) : isAttending && (
-                                <View className="flex-row items-center gap-1 px-2 py-1 rounded-full bg-purple-600">
+                                // Remove purple background for "You're Attending" as requested — show inline text only.
+                                <View className="flex-row items-center gap-1 px-2 py-1">
                                     <Ionicons name="checkmark-circle" size={12} color="white" />
                                     <Text className="text-white text-xs font-semibold">
                                         You're Attending
@@ -437,10 +440,11 @@ export default function EventDetails() {
                             return (
                                 <View className="flex-row gap-3">
                                     <TouchableOpacity
-                                        className="flex-1 py-4 rounded-lg items-center bg-purple-600"
+                                        className="flex-1 py-4 rounded-lg items-center"
                                         onPress={() => {
                                             setIsEditing(true);
                                         }}
+                                        style={{ backgroundColor: '#eb3678' }}
                                     >
                                         <Text className="text-white text-lg font-bold">Edit Event</Text>
                                     </TouchableOpacity>
