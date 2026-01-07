@@ -15,6 +15,7 @@ import RefreshTab from '@/components/RefreshTab/refreshTab';
 import Settings from '@/components/Settings/settings';
 import log from '@/utils/logger';
 import { useEffect } from "react";
+import { eventBus } from '@/utils/eventBus';
 import { useIsFocused } from '@react-navigation/native';
 
 export default function Profile({ userId, isUsersProfile = false, onBack }: { userId?: string, isUsersProfile?: boolean, onBack?: () => void }) {
@@ -78,6 +79,52 @@ export default function Profile({ userId, isUsersProfile = false, onBack }: { us
     }, []);
 
     useEffect(() => {
+        const unsub = eventBus.on('attendChanged', async (_data) => {
+            try {
+                await onRefresh();
+            } catch (e) {
+                console.error('Error refreshing profile after attendChanged', e);
+            }
+        });
+
+        return () => {
+            unsub();
+        };
+    }, [onRefresh]);
+
+    useEffect(() => {
+        const unsub2 = eventBus.on('eventCreated', async () => {
+            try {
+                await onRefresh();
+            } catch (e) {
+                console.error('Error refreshing profile after eventCreated', e);
+            }
+        });
+
+        const unsub3 = eventBus.on('eventUpdated', async () => {
+            try {
+                await onRefresh();
+            } catch (e) {
+                console.error('Error refreshing profile after eventUpdated', e);
+            }
+        });
+
+        const unsub4 = eventBus.on('eventDeleted', async () => {
+            try {
+                await onRefresh();
+            } catch (e) {
+                console.error('Error refreshing profile after eventDeleted', e);
+            }
+        });
+
+        return () => {
+            unsub2();
+            unsub3();
+            unsub4();
+        };
+    }, [onRefresh]);
+
+    useEffect(() => {
         if (!isFocused) {
             setEditProfile(false);
             setSettings(false);
@@ -102,7 +149,7 @@ export default function Profile({ userId, isUsersProfile = false, onBack }: { us
                     }));
                 }
 
-                const attended = await getAuth(router, '/getattended events?user=' + (userId ? userId : apiData.id));
+                const attended = await getAuth(router, '/getattendedevents?user=' + (userId ? userId : apiData.id));
                 if (attended && attended.events) {
                     setAttendedEvents(attended.events);
                 }

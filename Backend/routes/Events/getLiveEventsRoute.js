@@ -5,14 +5,14 @@ const getLiveEvents = require('../../db/Events/getLiveEventsDb');
 
 router.get('/', async (req, res) => {
     try {
-        const { userOnly } = req.query;
+        const { userOnly, city } = req.query;
         const userId = req.userId; // From auth middleware (optional)
 
         // Convert userOnly to boolean
         const isUserOnly = userOnly === 'true';
 
         // Call the database function with userId and userOnly flag
-        const result = await getLiveEvents(userId, isUserOnly);
+        const result = await getLiveEvents(userId, isUserOnly, city);
 
         if (result.code !== StatusCodes.OK) {
             return res.status(result.code).json({ message: result.result });
@@ -32,6 +32,8 @@ router.get('/', async (req, res) => {
             attendeesCount: event.attendeesCount,
             price: event.price || 0,
             attendees: event.attendees,
+            city: event.city || null,
+            type: event.type || 'event',
         }));
 
         return res.status(StatusCodes.OK).json({

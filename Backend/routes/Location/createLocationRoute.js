@@ -13,6 +13,7 @@ router.post('/', async (req, res) => {
     }
 
     const json = {
+        id: result.result._id,
         name: result.result.name,
         address: result.result.address,
         description: result.result.description,

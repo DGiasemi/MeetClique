@@ -9,6 +9,7 @@ import RefreshTab from "@/components/RefreshTab/refreshTab";
 import { getAuth } from "@/utils/request";
 import log from "@/utils/logger";
 import { useRouter } from "expo-router";
+import { useLocalSearchParams } from 'expo-router';
 
 export default function Chats({ onBackPress, isVisible }: { onBackPress?: () => void, isVisible?: boolean }) {
     const [chats, setChats] = React.useState<any[]>([]);
@@ -19,6 +20,7 @@ export default function Chats({ onBackPress, isVisible }: { onBackPress?: () => 
     const [selectedUserDetails, setSelectedUserDetails] = React.useState<any>(null);
     const isFocused = useIsFocused();
     const router = useRouter();
+    const params = useLocalSearchParams();
 
     const refreshChats = async () => {
         await fetchChats(false);
@@ -77,6 +79,20 @@ export default function Chats({ onBackPress, isVisible }: { onBackPress?: () => 
 
     useEffect(() => {
         fetchChats(true);
+        // If openMemberId provided in params, open chat directly
+        (async () => {
+            try {
+                const openMemberId = params?.openMemberId;
+                if (openMemberId) {
+                    const res = await getAuth(router, '/getchat?memberId=' + openMemberId);
+                    setSelectedUserDetails({ id: openMemberId });
+                    setChatUser(res);
+                    setOpenChat(true);
+                }
+            } catch (e) {
+                console.error('Failed to open chat from params', e);
+            }
+        })();
     }, []);
 
     useFocusEffect(

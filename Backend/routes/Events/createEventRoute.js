@@ -57,6 +57,8 @@ router.post('/', upload.single('event'), async (req, res) => {
         console.log('location: ', req.body.location);
         console.log('startTime: ', req.body.startTime);
         console.log('endTime: ', req.body.endTime);
+        console.log('city: ', req.body.city);
+        console.log('type: ', req.body.type);
         console.log('userId: ', req.userId);
         console.log('price: ', req.body.price);
 
@@ -65,10 +67,12 @@ router.post('/', upload.single('event'), async (req, res) => {
             req.body.description,
             file.path,
             req.body.location,
+            req.body.city,
             req.userId,
             req.body.startTime,
             req.body.endTime,
-            req.body.price
+            req.body.price,
+            req.body.type || 'event'
         );
 
         if (result.code !== 200) {

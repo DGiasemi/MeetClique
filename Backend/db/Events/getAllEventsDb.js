@@ -2,7 +2,7 @@ const { Event } = require('../../schemas/eventSchema');
 const HttpStatusCode = require('http-status-codes');
 const { StatusCodes } = HttpStatusCode;
 
-async function getAllEvents(excludeLive = false) {
+async function getAllEvents(excludeLive = false, city = null) {
     try {
         const currentTime = new Date();
 
@@ -16,6 +16,11 @@ async function getAllEvents(excludeLive = false) {
                     { endTime: { $lt: currentTime } }    // Events that have already ended
                 ]
             };
+        }
+
+        // If city provided, include city in the query
+        if (city) {
+            query = { ...query, city };
         }
 
         const events = await Event.find(query)

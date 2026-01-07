@@ -1,7 +1,8 @@
 import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Alert, BackHandler } from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
-import { getAuth, postAuth } from "@/utils/request";
+import { getAuth, postAuth, deleteAuth } from "@/utils/request";
+import { eventBus } from '@/utils/eventBus';
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Profile from "@/components/Profile/profile";
@@ -128,6 +129,12 @@ export default function EventDetails() {
                     "Success",
                     isAttending ? "You have left the event" : "You have joined the event!"
                 );
+                    try {
+                        // notify other parts of the app to refresh attended lists
+                        eventBus.emit('attendChanged', { eventId: event.id, attending: !isAttending });
+                    } catch (e) {
+                        console.error('Failed to emit attendChanged', e);
+                    }
             } else {
                 Alert.alert("Error", result.message || "Failed to update event status");
             }
@@ -137,6 +144,34 @@ export default function EventDetails() {
         } finally {
             setActionLoading(false);
         }
+    };
+
+    const handleDelete = async () => {
+        if (!event) return;
+        Alert.alert(
+            'Delete Event',
+            'Are you sure you want to delete this event? This cannot be undone.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete', style: 'destructive', onPress: async () => {
+                        try {
+                            const res = await deleteAuth(router, `/deleteevent?eventId=${event.id}`);
+                            if (res && res.status === 200) {
+                                try { eventBus.emit('eventDeleted', { eventId: event.id }); } catch (e) { console.error('emit eventDeleted', e); }
+                                Alert.alert('Deleted', 'Event deleted successfully');
+                                router.back();
+                            } else {
+                                Alert.alert('Error', res ? res.message || 'Delete failed' : 'Delete failed');
+                            }
+                        } catch (err) {
+                            console.error('Error deleting event:', err);
+                            Alert.alert('Error', 'An unexpected error occurred');
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const fetchAttendees = async (eventId: string) => {
@@ -157,6 +192,15 @@ export default function EventDetails() {
     const getEventUserId = () => {
         if (!event?.userID) return null;
         return typeof event.userID === 'object' ? event.userID._id : event.userID;
+    };
+
+    const handleHostPress = async () => {
+        try {
+            const userId = typeof event.userID === 'object' ? event.userID._id : event.userID;
+            router.push({ pathname: '/tabs/(tabs)/chats', params: { openMemberId: userId } });
+        } catch (err) {
+            console.error('Error opening chat for host:', err);
+        }
     };
 
     const getTimeUntilEvent = () => {
@@ -293,15 +337,30 @@ export default function EventDetails() {
                         className="w-full aspect-[4/2]"
                         resizeMode="cover"
                     />
-                    <Text className={`absolute top-4 right-4 font-bold px-3 py-2 rounded-full text-sm ${event.price === 0 ? "bg-yellow-500" : "bg-green-500"} text-black`}>
-                        {event.price === 0 ? "Free" : `$${event.price}`}
-                    </Text>
+                    {event.type === 'hangout' ? (
+                        <Text className={`absolute top-4 right-4 font-bold px-3 py-2 rounded-full text-sm bg-blue-600 text-white`}>
+                            Hangout
+                        </Text>
+                    ) : (
+                        <Text className={`absolute top-4 right-4 font-bold px-3 py-2 rounded-full text-sm ${event.price === 0 ? "bg-yellow-500 text-black" : "bg-green-500 text-black"}`}>
+                            {event.price === 0 ? "Free" : `$${event.price}`}
+                        </Text>
+                    )}
                 </View>
 
                 {/* Event Info */}
                 <View className="px-4 py-4">
                     {/* Event Name */}
                     <Text className="text-white text-2xl font-bold mb-2">{event.name}</Text>
+
+                    {/* Host tag for hangouts (clickable) */}
+                    {event.type === 'hangout' && (
+                        <View className="flex-row items-center gap-2 mb-3">
+                            <TouchableOpacity onPress={handleHostPress} className="px-2 py-1 bg-gray-800/30 rounded-md">
+                                <Text className="text-sm text-gray-300">@{typeof event.userID === 'object' ? event.userID.username : event.userIDUsername || 'host'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
 
                     {/* Time Status */}
                     {timeInfo && (
@@ -327,10 +386,16 @@ export default function EventDetails() {
                         </View>
                     )}
 
-                    {/* Location */}
-                    <View className="flex-row items-center mb-3">
-                        <Ionicons name="location" size={20} color="#eb3678" />
-                        <Text className="text-gray-300 text-base ml-2">{event.location?.name || "Location not specified"}</Text>
+                    {/* Location & City */}
+                    <View className="mb-3">
+                        <View className="flex-row items-center">
+                            <Ionicons name="location" size={20} color="#eb3678" />
+                            <View className="ml-2 flex-1">
+                                <Text className="text-white font-semibold">
+                                    {event.location?.name ? (event.city ? `${event.location.name}, ${event.city}` : event.location.name) : (event.city || "Location not specified")}
+                                </Text>
+                            </View>
+                        </View>
                     </View>
 
                     {/* Date & Time */}
@@ -385,10 +450,22 @@ export default function EventDetails() {
                                             </Text>
                                         </View>
                                     </TouchableOpacity>
-                                    <View className="py-4 rounded-lg items-center bg-purple-600">
-                                        <Text className="text-white text-lg font-bold">
-                                            You're the Host
-                                        </Text>
+                                    <View className="flex-row gap-3">
+                                        <TouchableOpacity
+                                            className="flex-1 py-4 rounded-lg items-center bg-purple-600"
+                                            onPress={() => {
+                                                setIsEditing(true);
+                                            }}
+                                        >
+                                            <Text className="text-white text-lg font-bold">Edit Event</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            className="flex-1 py-4 rounded-lg items-center bg-red-600"
+                                            onPress={handleDelete}
+                                        >
+                                            <Text className="text-white text-lg font-bold">Delete Event</Text>
+                                        </TouchableOpacity>
                                     </View>
                                 </>
                             );

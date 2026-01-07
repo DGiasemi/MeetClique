@@ -4,8 +4,9 @@ import { Ionicons } from "@expo/vector-icons";
 import log from "@/utils/logger";
 import { postAuth } from "@/utils/request";
 import { useRouter } from "expo-router";
+import { eventBus } from '@/utils/eventBus';
 
-export default function EventNext({ postUri, goback, onSuccess, name, content, location, startTime, endTime, price }: { postUri: string, goback: () => void, onSuccess?: () => void, name: string, content: string, location: any, startTime: Date, endTime: Date | null, price: string }) {
+export default function EventNext({ postUri, goback, onSuccess, name, content, location, startTime, endTime, price, city, itemType = 'event' }: { postUri: string, goback: () => void, onSuccess?: () => void, name: string, content: string, location: any, startTime: Date, endTime: Date | null, price: string, city: string, itemType?: 'event' | 'hangout' }) {
     useEffect(() => {
         const onBackPress = () => {
             goback();
@@ -15,6 +16,8 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
         return () => subscription.remove();
     }, [goback]);
 
+    const router = useRouter();
+
     const handleUpload = async () => {
         if (postUri === "" || !postUri) {
             log.error("No photo selected");
@@ -22,10 +25,30 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
         }
         const formData = new FormData();
 
+        // If location comes from Nominatim (external), create it in backend first
+        let locationId = location && (location._id || location.id);
+        try {
+            if (locationId && typeof locationId === 'string' && locationId.startsWith('nominatim_')) {
+                const createPayload = {
+                    name: location.name || location.address,
+                    address: location.address || location.name,
+                    description: location.description || location.address || location.name,
+                };
+                const router = useRouter();
+                const createRes = await postAuth(router, '/createlocation', createPayload);
+                if (createRes && createRes.status === 200 && createRes.location && createRes.location.id) {
+                    locationId = createRes.location.id;
+                }
+            }
+        } catch (err) {
+            console.error('Error creating backend location:', err);
+        }
+
         formData.append('name', name);
         formData.append('description', content);
-        formData.append('location', location.id);
-        formData.append('type', 'image');
+        formData.append('location', locationId);
+        if (city) formData.append('city', city);
+        formData.append('type', itemType === 'hangout' ? 'hangout' : 'event');
         formData.append('startTime', startTime.toISOString());
         if (endTime) {
             formData.append('endTime', endTime.toISOString());
@@ -39,19 +62,37 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
             type: 'image/jpeg',
         } as any);
         const router = useRouter();
-        const res = await postAuth(router, '/createevent', formData, {
-            'Content-Type': 'multipart/form-data',
-        });
+        try {
+            const res = await postAuth(router, '/createevent', formData, {
+                'Content-Type': 'multipart/form-data',
+            });
 
-        if (res.status === 200) {
-            log.info("Event uploaded successfully");
-            if (onSuccess) {
-                onSuccess();
+            if (res && res.status === 200) {
+                log.info("Event uploaded successfully");
+                try { eventBus.emit('eventCreated', {}); } catch (e) { console.error('emit eventCreated', e); }
+                if (onSuccess) {
+                    onSuccess();
+                } else {
+                    goback();
+                }
             } else {
-                goback();
+                log.error("Failed to upload event:", res ? res.message : 'no response');
+                alertError(res ? res.message || JSON.stringify(res) : 'Upload failed');
             }
-        } else {
-            log.error("Failed to upload event:", res.message);
+        } catch (err: any) {
+            console.error('Upload exception:', err);
+            alertError(err?.message || JSON.stringify(err));
+        }
+    }
+
+    const alertError = (msg: string) => {
+        try {
+            // prefer native alert
+            // @ts-ignore
+            if (global && global.alert) global.alert(msg);
+        } catch (e) {
+            // fallback to console
+            console.error('Alert failed:', e, msg);
         }
     }
 
@@ -89,6 +130,16 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
                             className="w-full aspect-[4/2]"
                         />
                         <View className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
+                        {/* Price / Hangout bubble */}
+                        {itemType === 'hangout' ? (
+                            <Text className={`absolute top-4 right-4 font-bold px-3 py-2 rounded-full text-sm bg-blue-600 text-white`}>
+                                Hangout
+                            </Text>
+                        ) : (
+                            <Text className={`absolute top-4 right-4 font-bold px-3 py-2 rounded-full text-sm ${price ? (price === '0' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-black') : 'bg-yellow-500 text-black'}`}>
+                                {price && price !== '0' ? `$${price}` : 'Free'}
+                            </Text>
+                        )}
                     </View>
 
                     {/* Event Details */}
@@ -107,18 +158,31 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
                             </View>
                         </View>
 
-                        {/* Price */}
+                        {/* City */}
                         <View className="bg-gray-900/50 rounded-xl px-4 py-3 mb-3 flex-row items-center gap-3">
-                            <View className="bg-yellow-600/20 p-2 rounded-full">
-                                <Ionicons name="pricetag" size={20} color="#EAB308" />
+                            <View className="bg-indigo-600/20 p-2 rounded-full">
+                                <Ionicons name="globe-outline" size={20} color="#6366F1" />
                             </View>
                             <View className="flex-1">
-                                <Text className="text-gray-400 text-xs mb-0.5">Price</Text>
-                                <Text className='text-white font-semibold'>
-                                    {price ? `$${price}` : "Free"}
-                                </Text>
+                                <Text className="text-gray-400 text-xs mb-0.5">City</Text>
+                                <Text className='text-white font-semibold'>{city || "Not specified"}</Text>
                             </View>
                         </View>
+
+                        {/* Price (hide for hangouts) */}
+                        {itemType !== 'hangout' && (
+                            <View className="bg-gray-900/50 rounded-xl px-4 py-3 mb-3 flex-row items-center gap-3">
+                                <View className="bg-yellow-600/20 p-2 rounded-full">
+                                    <Ionicons name="pricetag" size={20} color="#EAB308" />
+                                </View>
+                                <View className="flex-1">
+                                    <Text className="text-gray-400 text-xs mb-0.5">Price</Text>
+                                    <Text className='text-white font-semibold'>
+                                        {price ? `$${price}` : "Free"}
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
 
                         {/* Start Time */}
                         <View className="bg-gray-900/50 rounded-xl px-4 py-3 mb-3 flex-row items-center gap-3">
@@ -139,8 +203,8 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
                             </View>
                         </View>
 
-                        {/* End Time */}
-                        {endTime && (
+                        {/* End Time (only for events) */}
+                        {itemType === 'event' && endTime && (
                             <View className="bg-gray-900/50 rounded-xl px-4 py-3 mb-3 flex-row items-center gap-3">
                                 <View className="bg-red-600/20 p-2 rounded-full">
                                     <Ionicons name="stop-circle" size={20} color="#EF4444" />

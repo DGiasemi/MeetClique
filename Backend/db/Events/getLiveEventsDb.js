@@ -2,7 +2,7 @@ const { Event } = require('../../schemas/eventSchema');
 const HttpStatusCode = require('http-status-codes');
 const { StatusCodes } = HttpStatusCode;
 
-async function getLiveEvents(userId = null, userOnly = false) {
+async function getLiveEvents(userId = null, userOnly = false, city = null) {
     try {
         const currentTime = new Date();
 
@@ -15,6 +15,11 @@ async function getLiveEvents(userId = null, userOnly = false) {
         // If userOnly is true and userId is provided, filter by events where user is an attendee
         if (userOnly && userId) {
             query.attendees = { $in: [userId] };
+        }
+
+        // If city is provided, filter by city
+        if (city) {
+            query.city = city;
         }
 
         const events = await Event.find(query).populate('location').exec();

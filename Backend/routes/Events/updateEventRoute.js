@@ -27,9 +27,28 @@ const upload = multer({ storage: storage });
 
 router.put('/', upload.single('event'), async (req, res) => {
     try {
-        const { eventId, name, description, location, startTime, endTime, price } = req.body;
+        const { eventId, name, description, location, city, startTime, endTime, price, type } = req.body;
         const file = req.file;
         const userId = req.userId;
+
+        // Debug logging for update requests
+        try {
+            console.log('updateEventRoute received:', {
+                eventId,
+                name,
+                description,
+                location,
+                city,
+                startTime,
+                endTime,
+                price,
+                type,
+                file: file ? file.path : null,
+                userId
+            });
+        } catch (e) {
+            console.log('updateEventRoute: failed to stringify request for logging', e);
+        }
 
         if (!eventId) {
             if (file) fs.unlinkSync(file.path);
@@ -65,10 +84,12 @@ router.put('/', upload.single('event'), async (req, res) => {
             description,
             mediaUrl,
             location,
+            city,
             userId,
             startTime,
             endTime,
-            price
+            price,
+            type
         );
 
         if (result.code !== StatusCodes.OK) {

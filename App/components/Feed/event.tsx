@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import { Ionicons } from "@expo/vector-icons";
 import { deleteAuth } from "@/utils/request";
+import { getAuth } from "@/utils/request";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -80,6 +81,19 @@ export default function Event({ event, showTop = true }: { event: any, showTop?:
         });
     };
 
+    const handleHostPress = async (e: any) => {
+        // stop propagation to avoid opening event details
+        e && e.stopPropagation && e.stopPropagation();
+        try {
+            const userId = typeof event.userID === 'object' ? event.userID._id : event.userID;
+            const res = await getAuth(router, '/getchat?memberId=' + userId);
+            // navigate to chats page and open the chat via query param
+            router.push({ pathname: '/tabs/(tabs)/chats', params: { openMemberId: userId } });
+        } catch (err) {
+            console.error('Error opening chat for host:', err);
+        }
+    };
+
     return (
         <TouchableOpacity
             onPress={handleEventPress}
@@ -93,8 +107,11 @@ export default function Event({ event, showTop = true }: { event: any, showTop?:
                             <Text className='text-xl font-bold text-white' numberOfLines={1}>{event?.name}</Text>
                             <View className="flex-row items-center gap-1.5">
                                 <Ionicons name="location" size={14} color="#9CA3AF" />
-                                <Text className='text-sm text-gray-400' numberOfLines={1}>{event?.location?.name}</Text>
+                                <Text className='text-sm text-gray-400' numberOfLines={1}>
+                                    {event?.location?.name ? (event.city ? `${event.location.name}, ${event.city}` : event.location.name) : (event?.city || 'Location not specified')}
+                                </Text>
                             </View>
+                            {/* Host tag hidden in preview; shown in details only */}
                         </View>
                     </View>
                 )}
@@ -107,13 +124,19 @@ export default function Event({ event, showTop = true }: { event: any, showTop?:
                     {/* Gradient overlay for better text visibility */}
                     <View className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                    {/* Price badge */}
+                    {/* Price / Hangout badge */}
                     <View className="absolute top-3 right-3">
-                        <View className={`px-3 py-1.5 rounded-full shadow-lg ${event?.price === 0 ? "bg-yellow-400" : "bg-emerald-500"}`}>
-                            <Text className="text-black font-bold text-sm">
-                                {event?.price === 0 ? "FREE" : `$${event?.price}`}
-                            </Text>
-                        </View>
+                        {event?.type === 'hangout' ? (
+                            <View className="px-2 py-1">
+                                <Text className="text-white font-bold text-sm">Hangout</Text>
+                            </View>
+                        ) : (
+                            <View className={`px-3 py-1.5 rounded-full shadow-lg ${event?.price === 0 ? "bg-yellow-400" : "bg-emerald-500"}`}>
+                                <Text className="text-black font-bold text-sm">
+                                    {event?.price === 0 ? "FREE" : `$${event?.price}`}
+                                </Text>
+                            </View>
+                        )}
                     </View>
 
                     {/* Time badge */}

@@ -34,6 +34,8 @@ router.get('/', async (req, res) => {
             reactionsCount: event.reactionsCount,
             attendeesCount: event.attendeesCount,
             price: event.price || 0,
+            city: event.city || null,
+            type: event.type || 'event',
         }));
 
         result.result = processedResult;

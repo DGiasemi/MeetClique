@@ -36,6 +36,25 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
         ]).start();
     }, []);
 
+    // Get user's current location to bias search results
+    useEffect(() => {
+        (async () => {
+            try {
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    console.log('Location permission not granted');
+                    return;
+                }
+                const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
+                if (pos && pos.coords) {
+                    setUserLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+                }
+            } catch (err) {
+                console.error('Failed to get user location:', err);
+            }
+        })();
+    }, []);
+
     const updateLocationAndDistances = async (location: Location.LocationObject | null) => {
         const _userLocation = location;
         if (_userLocation === null) {
@@ -51,18 +70,96 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
 
     const searchLocation = async (query: string) => {
         setIsSearching(true);
-        if (query.trim() === '') {
-            setLocations(defaultLocations);
-            setIsSearching(false);
-            return;
-        }
-        const response = await getAuth(router, "/getlocations?name=" + query);
-        if (response.status === 200 && response.result) {
-            setLocations(response.result);
-        } else {
+        try {
+            if (query.trim() === '') {
+                setLocations(defaultLocations || []);
+                setIsSearching(false);
+                return;
+            }
+
+            // Use OpenStreetMap Nominatim: do a nearby-biased query plus a broader query,
+            // then merge results so nearby items are prioritized but other matches still appear.
+            const encoded = encodeURIComponent(query);
+            const base = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encoded}`;
+
+            // Build local (viewbox) URL if user location available
+            let localUrl: string | null = null;
+            if (userLocation && userLocation.latitude && userLocation.longitude) {
+                const delta = 0.05; // ~5km bias
+                const lat = parseFloat(userLocation.latitude);
+                const lon = parseFloat(userLocation.longitude);
+                const minLon = lon - delta;
+                const minLat = lat - delta;
+                const maxLon = lon + delta;
+                const maxLat = lat + delta;
+                localUrl = `${base}&limit=8&viewbox=${minLon},${minLat},${maxLon},${maxLat}`; // no bounded param so it's a bias
+            }
+
+            // Broader URL limited to Greece to keep results relevant
+            const globalUrl = `${base}&limit=12&countrycodes=gr`;
+
+            try {
+                // Fetch both (local first if available)
+                let localData: any[] = [];
+                if (localUrl) {
+                    const r = await fetch(localUrl, { headers: { Accept: 'application/json', 'User-Agent': 'EventsApp/1.0 (compatible)' } });
+                    if (r.ok) localData = await r.json();
+                }
+
+                const g = await fetch(globalUrl, { headers: { Accept: 'application/json', 'User-Agent': 'EventsApp/1.0 (compatible)' } });
+                const globalData = g.ok ? await g.json() : [];
+
+                // Map function
+                const mapItems = (arr: any[]) => (arr || []).map((item: any) => {
+                    const display = item.display_name || '';
+                    return {
+                        id: `nominatim_${item.place_id}`,
+                        place_id: item.place_id,
+                        name: (item.namedetails && item.namedetails.name) ? item.namedetails.name : (display.split(',')[0] || display),
+                        address: display,
+                        description: item.type || item.class || display,
+                        lat: item.lat,
+                        lon: item.lon,
+                        raw: item,
+                    };
+                });
+
+                const mappedLocal = mapItems(localData);
+                const mappedGlobal = mapItems(globalData);
+
+                // Merge: include local first, then global items that don't duplicate by place_id
+                const seen = new Set(mappedLocal.map((i: any) => i.place_id));
+                const merged = [...mappedLocal];
+                for (const item of mappedGlobal) {
+                    if (!seen.has(item.place_id)) {
+                        merged.push(item);
+                        seen.add(item.place_id);
+                    }
+                }
+
+                // Limit total results
+                const final = merged.slice(0, 10);
+                setLocations(final);
+            } catch (err) {
+                console.error('Error searching locations:', err);
+                // fallback to backend locations endpoint
+                try {
+                    const response = await getAuth(router, "/getlocations?name=" + query);
+                    if (response && response.status === 200 && response.result) {
+                        setLocations(Array.isArray(response.result) ? response.result : []);
+                    } else {
+                        setLocations([]);
+                    }
+                } catch (e) {
+                    setLocations([]);
+                }
+            }
+        } catch (error) {
+            console.error('Error searching locations:', error);
             setLocations([]);
+        } finally {
+            setIsSearching(false);
         }
-        setIsSearching(false);
     }
 
     useEffect(() => {
@@ -164,7 +261,7 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: 20 }}
                 >
-                    {locations.length === 0 && locationValue.length > 0 ? (
+                    {(locations?.length ?? 0) === 0 && locationValue.length > 0 ? (
                         <View className="items-center justify-center py-16">
                             <View className="w-20 h-20 rounded-full bg-gray-800/50 items-center justify-center mb-4">
                                 <Ionicons name="location-outline" size={40} color="#6B7280" />
@@ -176,10 +273,15 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
                         </View>
                     ) : (
                         <View className="gap-3">
-                            {locations.map((location, index) => (
+                            {(locations ?? []).map((location, index) => (
                                 <TouchableOpacity
                                     key={index}
-                                    onPress={() => setLocation(location)}
+                                    onPress={() => {
+                                        const addr = (location.raw && location.raw.address) ? location.raw.address : {};
+                                        const cityName = addr.city || addr.town || addr.village || addr.county || '';
+                                        const locWithCity = { ...location, city: cityName };
+                                        setLocation(locWithCity);
+                                    }}
                                     activeOpacity={0.7}
                                     className="rounded-2xl overflow-hidden"
                                     style={{

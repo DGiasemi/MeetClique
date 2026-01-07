@@ -5,11 +5,11 @@ const getAllEvents = require('../../db/Events/getAllEventsDb');
 
 router.get('/', async (req, res) => {
     try {
-        const { excludeLive } = req.query;
+        const { excludeLive, city } = req.query;
 
         const excludeLiveFlag = excludeLive === 'true';
 
-        const result = await getAllEvents(excludeLiveFlag);
+        const result = await getAllEvents(excludeLiveFlag, city);
 
         if (result.code !== StatusCodes.OK) {
             return res.status(result.code).json({ message: result.result });
@@ -29,6 +29,8 @@ router.get('/', async (req, res) => {
             attendeesCount: event.attendeesCount,
             price: event.price || 0,
             attendees: event.attendees,
+            city: event.city || null,
+            type: event.type || 'event',
         }));
 
         return res.status(StatusCodes.OK).json({ message: 'Success', events: processedResult });

@@ -9,7 +9,8 @@ async function createLocation(name, address, description) {
         return { code: StatusCodes.BAD_REQUEST, result: 'Invalid request: Missing required fields' };
     }
 
-    if (getLocation(name, address, description).code === StatusCodes.OK) {
+    const existing = await getLocation(name, address, description);
+    if (existing && existing.code === StatusCodes.OK) {
         return { code: StatusCodes.BAD_REQUEST, result: 'Location already exists' };
     }
     try {

@@ -12,7 +12,8 @@ const eventSchema = new mongoose.Schema({
     location: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Location',
-        required: true
+        required: false,
+        default: null
     },
     mediaUrl: {
         type: String,
@@ -51,6 +52,17 @@ const eventSchema = new mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
         default: []
+    }
+    ,
+    city: {
+        type: String,
+        required: true
+    }
+    ,
+    type: {
+        type: String,
+        enum: ['event', 'hangout'],
+        default: 'event'
     }
 });
 
