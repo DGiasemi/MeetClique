@@ -27,14 +27,14 @@ export default function Developer() {
               <Text className="text-typography-white font-normal">
                 Early Development build
               </Text>
-              <Text className="text-red-500 font-medium font-bold">
+              <Text className="text-red-500 font-medium">
                 Developer Only Access
               </Text>
           </Box>
           <Box className="flex flex-1 justify-center items-center">
             <Link href={url as any} className="bg-white rounded-full p-3 mt-5">
               <Text className="text-blue-500 font-medium text-xl">
-                Open Application
+                Open MeetClique Application
               </Text>
             </Link>
           </Box>

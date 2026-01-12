@@ -58,7 +58,7 @@ export default function Home() {
     try {
       const encoded = encodeURIComponent(query);
       const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=10&countrycodes=gr&q=${encoded}`;
-      const resp = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': 'EventsApp/1.0 (compatible)' } });
+      const resp = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': 'MeetClique/1.0 (compatible)' } });
       if (!resp.ok) {
         setCityResults([]);
         return;

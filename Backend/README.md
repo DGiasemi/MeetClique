@@ -1,4 +1,4 @@
-# EventsApp Backend
+# MeetClique Backend
 
 ## Setup
 

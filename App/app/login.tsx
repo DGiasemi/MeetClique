@@ -10,7 +10,6 @@ import { useRouter } from 'expo-router';
 import NotificationService from '@/utils/notificationService';
 import { Ionicons } from '@expo/vector-icons';
 import MeetcliqueLogo from '@/assets/Icons/MeetcliqueLogo';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');

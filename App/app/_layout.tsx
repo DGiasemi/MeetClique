@@ -16,6 +16,7 @@ import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getAuth } from "@/utils/request";
+import * as SecureStore from 'expo-secure-store';
 import { useColorScheme } from "@/components/useColorScheme";
 import { useEffect } from "react";
 import { useFonts } from "expo-font";
@@ -40,7 +41,10 @@ export default function RootLayout() {
     const router = useRouter();
 
     const checkAuth = async () => {
-      await getAuth(router, "/isauthenticated");
+      const token = await SecureStore.getItemAsync('userToken');
+      if (token) {
+        await getAuth(router, "/isauthenticated");
+      }
     };
 
     checkAuth();

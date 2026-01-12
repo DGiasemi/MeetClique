@@ -102,11 +102,11 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
                 // Fetch both (local first if available)
                 let localData: any[] = [];
                 if (localUrl) {
-                    const r = await fetch(localUrl, { headers: { Accept: 'application/json', 'User-Agent': 'EventsApp/1.0 (compatible)' } });
+                    const r = await fetch(localUrl, { headers: { Accept: 'application/json', 'User-Agent': 'MeetClique/1.0 (compatible)' } });
                     if (r.ok) localData = await r.json();
                 }
 
-                const g = await fetch(globalUrl, { headers: { Accept: 'application/json', 'User-Agent': 'EventsApp/1.0 (compatible)' } });
+                const g = await fetch(globalUrl, { headers: { Accept: 'application/json', 'User-Agent': 'MeetClique/1.0 (compatible)' } });
                 const globalData = g.ok ? await g.json() : [];
 
                 // Map function

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "eventsApp",
-    "slug": "eventsApp",
+    "name": "MeetClique",
+    "slug": "meetclique",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.eventsApp"
+      "bundleIdentifier": "com.example.meetclique"
     },
     "android": {
       "config": {
@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.example.eventsApp"
+      "package": "com.example.meetclique"
     },
     "web": {
       "bundler": "metro",
@@ -52,8 +52,8 @@
       }
     },
     "splash": {
-      "image": "./assets/images/logo-splash.svg",
-      "backgroundColor": "#11181C"
+      "image": "./assets/images/splash.png",
+      "backgroundColor": "#151718"
     },
     "owner": "MeetClique"
   }

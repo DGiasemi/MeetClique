@@ -67,7 +67,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
             const encoded = encodeURIComponent(query);
             const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=10&countrycodes=gr&q=${encoded}`;
             const resp = await fetch(url, {
-                headers: { Accept: 'application/json', 'User-Agent': 'EventsApp/1.0 (compatible)' }
+                headers: { Accept: 'application/json', 'User-Agent': 'MeetClique/1.0 (compatible)' }
             });
             if (!resp.ok) {
                 setCityResults([]);
@@ -484,7 +484,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                     </View>
 
                     {/* End Time (only for events) */}
-                    {itemType === 'event' && (
+                    {type === 'event' && (
                         <View className="w-full rounded-xl bg-gray-800/50 border border-gray-700/50 px-4 py-3 mb-4">
                             <View className="flex-row items-center gap-2 mb-2">
                                 <Ionicons name="calendar-outline" size={18} color="#3B82F6" />
@@ -546,7 +546,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                     <View className="w-full rounded-xl bg-gray-800/50 border border-gray-700/50 px-4 py-3">
                         <View className="flex-row items-center gap-2 mb-2">
                             <Ionicons name="location-outline" size={18} color="#3B82F6" />
-                            <Text className="text-gray-300 text-sm font-semibold">Location {itemType === 'hangout' ? '(Optional)' : '*'}</Text>
+                            <Text className="text-gray-300 text-sm font-semibold">Location {type === 'hangout' ? '(Optional)' : '*'}</Text>
                         </View>
                         <TouchableOpacity
                             className="w-full bg-gray-900/50 px-4 py-3 rounded-xl flex-row items-center justify-between"
