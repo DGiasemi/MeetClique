@@ -1,8 +1,6 @@
-// Starter theme tokens for EventsApp
-
 export const Theme = {
   // Brand
-  primary: '#3B82F6', // used widely as interactive accent
+  primary: '#3B82F6',
   accent: '#eb3678',
 
   // Semantic colors

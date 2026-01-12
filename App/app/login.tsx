@@ -9,6 +9,7 @@ import { getAuth } from '@/utils/request';
 import { useRouter } from 'expo-router';
 import NotificationService from '@/utils/notificationService';
 import { Ionicons } from '@expo/vector-icons';
+import MeetcliqueLogo from '@/assets/Icons/MeetcliqueLogo';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LoginScreen() {
@@ -69,7 +70,6 @@ export default function LoginScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Gradient Background */}
       <View className="absolute top-0 left-0 right-0 h-96 opacity-30">
         <View className="absolute top-0 left-0 w-72 h-72 bg-blue-500 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
         <View className="absolute top-20 right-0 w-64 h-64 bg-purple-500 rounded-full blur-3xl translate-x-1/2" />
@@ -84,18 +84,13 @@ export default function LoginScreen() {
           behavior="padding"
           className="flex-1 justify-center px-6 py-12"
         >
-          {/* Logo/Title Section */}
           <View className="items-center mb-12">
-            <View className="bg-gradient-to-br from-blue-500 to-purple-600 w-20 h-20 rounded-3xl items-center justify-center mb-4 shadow-lg">
-              <Ionicons name="location" size={40} color="white" />
-            </View>
-            <Text className="text-white text-4xl font-bold mb-2">Welcome Back</Text>
+              <MeetcliqueLogo width={350} height={120} />
             <Text className="text-gray-400 text-base">Sign in to continue your journey</Text>
           </View>
 
           {/* Form Card */}
           <View className="bg-gray-800/40 backdrop-blur-xl rounded-3xl p-6 border border-gray-700/50 shadow-2xl">
-            {/* Username Input */}
             <View className="mb-5">
               <Text className="text-gray-300 text-sm font-semibold mb-2 ml-1">Username</Text>
               <View className="flex-row items-center bg-gray-700/50 rounded-xl border border-gray-600/50 px-4 py-1">
@@ -112,7 +107,6 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            {/* Password Input */}
             <View className="mb-3">
               <Text className="text-gray-300 text-sm font-semibold mb-2 ml-1">Password</Text>
               <View className="flex-row items-center bg-gray-700/50 rounded-xl border border-gray-600/50 px-4 py-1">
@@ -137,7 +131,6 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            {/* Forgot Password */}
             <TouchableOpacity
               onPress={() => ToastAndroid.show("Gl with ts 🙏💀", ToastAndroid.SHORT)}
               className="mb-6"
@@ -145,7 +138,6 @@ export default function LoginScreen() {
               <Text className="text-blue-400 text-sm text-right">Forgot Password?</Text>
             </TouchableOpacity>
 
-            {/* Login Button */}
             <TouchableOpacity
               className={`bg-blue-600 rounded-xl py-4 shadow-lg ${isLoading ? 'opacity-50' : ''}`}
               onPress={handleAuth}
@@ -164,14 +156,12 @@ export default function LoginScreen() {
               </View>
             </TouchableOpacity>
 
-            {/* Divider */}
             <View className="flex-row items-center my-6">
               <View className="flex-1 h-[1px] bg-gray-700" />
               <Text className="text-gray-500 px-4 text-sm">OR</Text>
               <View className="flex-1 h-[1px] bg-gray-700" />
             </View>
 
-            {/* Register Link */}
             <TouchableOpacity
               onPress={() => router.push('/register')}
               className="rounded-xl py-4"
@@ -186,7 +176,6 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Footer */}
           <Text className="text-gray-500 text-center mt-8 text-sm">
             By continuing, you agree to our Terms & Privacy Policy
           </Text>

@@ -1,6 +1,7 @@
 import { TouchableOpacity, View, Text, ScrollView, ActivityIndicator, TextInput } from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import MeetcliqueLogo from '@/assets/Icons/MeetcliqueLogo';
 
 import { useAppServices } from "@/hooks/useAppServices";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -226,6 +227,9 @@ export default function Home() {
               <Text className="text-white text-2xl font-bold mr-2">{city}</Text>
               <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
             </TouchableOpacity>
+          </View>
+          <View className="items-center">
+            <MeetcliqueLogo width={128} height={32} />
           </View>
           {showCityPicker && (
             <View style={{ position: 'absolute', left: 16, right: 16, top: 56, zIndex: 1000 }}>
