@@ -16,6 +16,11 @@ class SocketService {
         try {
             const token = await SecureStore.getItemAsync('userToken');
 
+            if (!API_URL) {
+                console.warn('[Socket] EXPO_PUBLIC_API_URL is not set; skipping socket connection');
+                return;
+            }
+
             if (!token) {
                 console.warn('[Socket] No token found, cannot connect');
                 return;
@@ -26,7 +31,8 @@ class SocketService {
                 return;
             }
 
-            this.socket = io(API_URL, {
+            try {
+                this.socket = io(API_URL, {
                 auth: { token },
                 transports: ['websocket', 'polling'],
                 reconnection: true,
@@ -34,6 +40,10 @@ class SocketService {
                 reconnectionDelayMax: 5000,
                 reconnectionAttempts: this.maxReconnectAttempts,
             });
+            } catch (err) {
+                console.error('[Socket] Failed to initialize socket.io client:', err);
+                return;
+            }
 
             this.setupEventHandlers();
 

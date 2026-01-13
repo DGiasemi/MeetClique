@@ -8,8 +8,13 @@ import log from './logger';
 
 const API_BASE_URL = URLS.api;
 
+if (!API_BASE_URL) {
+    console.error('EXPO_PUBLIC_API_URL is not set. API calls will fail. Set EXPO_PUBLIC_API_URL in your environment.');
+}
+
 const getAuth = async (router: any, endpoint: string) => {
     try {
+        if (!API_BASE_URL) throw new Error('API base URL not configured');
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: 'GET',
             headers: { ...await getAuthHeaders() },
@@ -34,6 +39,7 @@ const getAuth = async (router: any, endpoint: string) => {
 
 const postAuth = async (router: any, endpoint: string, body?: any, headers?: any) => {
     try {
+        if (!API_BASE_URL) throw new Error('API base URL not configured');
         const response = await axios.post(`${API_BASE_URL}${endpoint}`, body, {
             headers: { ...await getAuthHeaders(), ...headers },
         });
@@ -57,6 +63,7 @@ const postAuth = async (router: any, endpoint: string, body?: any, headers?: any
 
 const deleteAuth = async (router: any, endpoint: string, body?: any) => {
     try {
+        if (!API_BASE_URL) throw new Error('API base URL not configured');
         const response = await axios.delete(`${API_BASE_URL}${endpoint}`, {
             headers: { ...await getAuthHeaders() },
             data: body,
@@ -81,6 +88,7 @@ const deleteAuth = async (router: any, endpoint: string, body?: any) => {
 
 const putAuth = async (router: any, endpoint: string, body?: any, headers?: any) => {
     try {
+        if (!API_BASE_URL) throw new Error('API base URL not configured');
         const response = await axios.put(`${API_BASE_URL}${endpoint}`, body, {
             headers: { ...await getAuthHeaders(), ...headers },
         });

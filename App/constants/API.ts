@@ -11,6 +11,10 @@ const URLS = {
     getuser: '/getuser',
 };
 
+if (!URLS.api) {
+    console.warn('EXPO_PUBLIC_API_URL is not set. API calls will fail until configured.');
+}
+
 const getAuthHeaders = async () => {
     const token = await getUserToken();
     return {

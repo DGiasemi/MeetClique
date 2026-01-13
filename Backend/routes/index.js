@@ -82,5 +82,23 @@ router.use('/updateevent', authenticationDetails, updateEventRoute);
 // Locations routes
 router.use('/createlocation', authenticationDetails, createLocationRoute);
 router.use('/getlocations', getLocationsRoute);
+// Groups routes
+const createGroupRoute = require('./Groups/createGroupRoute');
+const getGroupsRoute = require('./Groups/getGroupsRoute');
+const getGroupRoute = require('./Groups/getGroupRoute');
+const joinGroupRoute = require('./Groups/joinGroupRoute');
+const leaveGroupRoute = require('./Groups/leaveGroupRoute');
+const groupCommentRoutes = require('./Groups/commentRoutes');
+const updateGroupRoute = require('./Groups/updateGroupRoute');
+const deleteGroupRoute = require('./Groups/deleteGroupRoute');
+
+router.use('/creategroup', authenticationDetails, createGroupRoute);
+router.use('/getgroups', getGroupsRoute);
+router.use('/getgroup', getGroupRoute);
+router.use('/joingroup', authenticationDetails, joinGroupRoute);
+router.use('/leavegroup', authenticationDetails, leaveGroupRoute);
+router.use('/groupcomments', authenticationDetails, groupCommentRoutes);
+router.use('/updategroup', authenticationDetails, updateGroupRoute);
+router.use('/deletegroup', authenticationDetails, deleteGroupRoute);
 
 module.exports = router;

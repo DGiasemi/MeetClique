@@ -377,7 +377,6 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                         )}
                     </View>
 
-                    {/* Price in USD (only for events) */}
                     {type === 'event' && (
                         <View className="w-full rounded-xl bg-gray-800/50 border border-gray-700/50 px-4 py-3 mb-4">
                             <View className="flex-row items-center gap-2 mb-2">
