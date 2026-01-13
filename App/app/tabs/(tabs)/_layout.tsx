@@ -41,70 +41,70 @@ function TabBarIcon(props: {
   );
 }
 
-function MiddleTabBarIcon({
-  name,
-  color,
-  focused,
-}: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-  color: string;
-  focused: boolean;
-}) {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const glowAnim = useRef(new Animated.Value(0)).current;
+// function MiddleTabBarIcon({
+//   name,
+//   color,
+//   focused,
+// }: {
+//   name: React.ComponentProps<typeof FontAwesome>["name"];
+//   color: string;
+//   focused: boolean;
+// }) {
+//   const scaleAnim = useRef(new Animated.Value(1)).current;
+//   const glowAnim = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: focused ? 1.1 : 1,
-        friction: 4,
-        tension: 50,
-        useNativeDriver: true,
-      }),
-      Animated.timing(glowAnim, {
-        toValue: focused ? 1 : 0,
-        duration: 300,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  }, [focused]);
+//   React.useEffect(() => {
+//     Animated.parallel([
+//       Animated.spring(scaleAnim, {
+//         toValue: focused ? 1.1 : 1,
+//         friction: 4,
+//         tension: 50,
+//         useNativeDriver: true,
+//       }),
+//       Animated.timing(glowAnim, {
+//         toValue: focused ? 1 : 0,
+//         duration: 300,
+//         useNativeDriver: false,
+//       }),
+//     ]).start();
+//   }, [focused]);
 
-  const shadowRadius = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [5, 20],
-  });
+//   const shadowRadius = glowAnim.interpolate({
+//     inputRange: [0, 1],
+//     outputRange: [5, 20],
+//   });
 
-  return (
-    <Animated.View
-      style={{
-        position: "absolute",
-        bottom: -10,
-        transform: [{ scale: scaleAnim }],
-      }}
-    >
-      <Animated.View
-        style={{
-          borderRadius: 50,
-          padding: 10,
-          paddingTop: 12,
-          paddingLeft: 14,
-          width: 55,
-          height: 55,
-          borderWidth: 3,
-          borderColor: "#eb3678",
-          backgroundColor: "#eb3678",
-          shadowColor: "#eb3678",
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: focused ? 0.8 : 0.3,
-          shadowRadius: focused ? 20 : 5,
-          elevation: focused ? 15 : 8,
-        }}
-      >
-        <FontAwesome size={30} name={name} color="white" />
-      </Animated.View>
-    </Animated.View>
-  );
-}
+//   return (
+//     <Animated.View
+//       style={{
+//         position: "absolute",
+//         bottom: -10,
+//         transform: [{ scale: scaleAnim }],
+//       }}
+//     >
+//       <Animated.View
+//         style={{
+//           borderRadius: 50,
+//           padding: 10,
+//           paddingTop: 12,
+//           paddingLeft: 14,
+//           width: 55,
+//           height: 55,
+//           borderWidth: 3,
+//           borderColor: "#eb3678",
+//           backgroundColor: "#eb3678",
+//           shadowColor: "#eb3678",
+//           shadowOffset: { width: 0, height: 0 },
+//           shadowOpacity: focused ? 0.8 : 0.3,
+//           shadowRadius: focused ? 20 : 5,
+//           elevation: focused ? 15 : 8,
+//         }}
+//       >
+//         <FontAwesome size={30} name={name} color="white" />
+//       </Animated.View>
+//     </Animated.View>
+//   );
+// }
 
 export const TabBarVisibilityContext = createContext<{
   visible: boolean;
@@ -217,6 +217,22 @@ export default function TabLayout() {
           options={{
             href: null,
             title: "Event Details",
+          }}
+        />
+
+        <Tabs.Screen
+          name="groups"
+          options={{
+            href: null,
+            title: "Groups",
+          }}
+        />
+
+        <Tabs.Screen
+          name="groupDetails"
+          options={{
+            href: null,
+            title: "Group Details",
           }}
         />
 

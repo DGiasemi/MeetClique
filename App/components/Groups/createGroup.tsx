@@ -186,8 +186,8 @@ export default function CreateGroup({ onCancel }: { onCancel?: () => void }) {
 
         <View className="w-full rounded-xl bg-gray-800/50 border border-gray-700/50 px-4 py-3 mb-4">
           <Text className="text-gray-300 mb-2 mt-4">Category</Text>
-          <View className="flex-row gap-2 mb-3">
-            {['Fun','Travel','Hobbies','Learning','Other'].map(cat => (
+          <View className="flex-row gap-2 mb-3 flex-wrap">
+            {['Fun','Travel','Hobbies','Learning','Food','Other'].map(cat => (
               <TouchableOpacity key={cat} onPress={() => setCategory(cat)} className={`px-3 py-2 rounded-md ${category===cat ? 'bg-blue-600' : 'bg-gray-800/40'}`}>
                 <Text className={`${category===cat ? 'text-white' : 'text-gray-300'}`}>{cat}</Text>
               </TouchableOpacity>

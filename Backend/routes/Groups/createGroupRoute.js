@@ -25,6 +25,11 @@ router.post('/', upload.single('image'), async (req, res) => {
         const file = req.file;
         const imagePath = file ? file.path : null;
         const { name, description, city, category } = req.body;
+        
+        if (file) {
+            console.log('Group image uploaded:', file.originalname, 'at path:', imagePath);
+        }
+        
         const result = await createGroup(name, description, imagePath, city, category, req.userId);
         if (result.code !== 200) {
             if (file && fs.existsSync(file.path)) fs.unlinkSync(file.path);

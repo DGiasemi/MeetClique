@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAuth } from "@/utils/request";
 import { useRouter, useFocusEffect } from "expo-router";
 import Event from "@/components/Feed/event";
+import Group from "@/components/Feed/group";
 import RefreshTab from "@/components/RefreshTab/refreshTab";
 
 export default function Home() {
@@ -16,8 +17,10 @@ export default function Home() {
   const [allEvents, setAllEvents] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [pastEvents, setPastEvents] = useState<any[]>([]);
+  const [activeGroups, setActiveGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingAllEvents, setLoadingAllEvents] = useState(true);
+  const [loadingGroups, setLoadingGroups] = useState(true);
   const [city, setCity] = useState<string>('All Cities');
   const [showCityPicker, setShowCityPicker] = useState<boolean>(false);
   const [cityQuery, setCityQuery] = useState<string>('');
@@ -47,6 +50,26 @@ export default function Home() {
     } else {
       console.log("Failed to fetch social points data:", res.message);
     }
+  };
+
+  const filterActiveGroups = (groups: any[]): any[] => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    return groups.filter((group) => {
+      const createdDate = new Date(group.createdAt);
+      if (createdDate > thirtyDaysAgo) return true;
+
+      if (group.comments && group.comments.length > 0) {
+        const recentComment = group.comments.some((comment: any) => {
+          const commentDate = new Date(comment.editedAt || comment.createdAt);
+          return commentDate > thirtyDaysAgo;
+        });
+        return recentComment;
+      }
+
+      return false;
+    });
   };
 
   const fetchCitySuggestions = async (query: string) => {
@@ -126,10 +149,22 @@ export default function Home() {
         setPastEvents(past);
       }
       setLoadingAllEvents(false);
+
+      // Refresh active groups
+      setLoadingGroups(true);
+      const cityParam3 = city && city !== 'All Cities' ? `?city=${encodeURIComponent(city)}` : '';
+      const groupsRes = await getAuth(router, `/getgroups${cityParam3}`);
+      if (groupsRes.status === 200) {
+        const allGroups = groupsRes.groups || [];
+        const active = filterActiveGroups(allGroups);
+        setActiveGroups(active);
+      }
+      setLoadingGroups(false);
     } catch (error) {
       console.log("Failed to refresh:", error);
       setLoading(false);
       setLoadingAllEvents(false);
+      setLoadingGroups(false);
     }
   };
 
@@ -211,6 +246,31 @@ export default function Home() {
       fetchAllEvents();
     }
   }, [userData]);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        setLoadingGroups(true);
+        const cityParam = city && city !== 'All Cities' ? `?city=${encodeURIComponent(city)}` : '';
+        const res = await getAuth(router, `/getgroups${cityParam}`);
+        if (res.status === 200) {
+          const allGroups = res.groups || [];
+          const active = filterActiveGroups(allGroups);
+          setActiveGroups(active);
+        } else {
+          console.error("Failed to fetch groups:", res.message);
+        }
+      } catch (error) {
+        console.log("Failed to fetch groups:", error);
+      } finally {
+        setLoadingGroups(false);
+      }
+    };
+
+    if (userData) {
+      fetchGroups();
+    }
+  }, [userData, city]);
 
   useAppServices();
 
@@ -335,6 +395,46 @@ export default function Home() {
                 </View>
                 <Text className="text-gray-400 text-base font-semibold">No upcoming events</Text>
                 <Text className="text-gray-500 text-sm mt-1 text-center">New events will appear here</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Active Groups Section */}
+          <View className="mt-6">
+            <View className="flex-row items-center gap-2 px-4 mb-3">
+              <Ionicons name="people" size={22} color="#eb3678" />
+              <Text className="text-white text-xl font-bold">Active Groups</Text>
+              {activeGroups.length > 0 && (
+                <View className="bg-blue-600/20 px-2 py-1 rounded-full">
+                  <Text className="text-blue-400 text-xs font-semibold">{activeGroups.length}</Text>
+                </View>
+              )}
+            </View>
+            {loadingGroups ? (
+              <View className="h-48 justify-center items-center">
+                <ActivityIndicator size="large" color="#8b5cf6" />
+                <Text className="text-gray-400 mt-3 text-sm">Loading groups...</Text>
+              </View>
+            ) : activeGroups.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="px-4"
+                contentContainerStyle={{ gap: 16 }}
+              >
+                {activeGroups.map((group) => (
+                  <View key={group._id} className="w-80">
+                    <Group group={group} showTop={true} />
+                  </View>
+                ))}
+              </ScrollView>
+            ) : (
+              <View className="mx-4 bg-gray-800/30 border border-gray-700/50 rounded-xl p-8 items-center">
+                <View className="bg-gray-700/30 p-4 rounded-full mb-3">
+                  <Ionicons name="people-outline" size={40} color="#6B7280" />
+                </View>
+                <Text className="text-gray-400 text-base font-semibold">No active groups</Text>
+                <Text className="text-gray-500 text-sm mt-1 text-center">Groups with activity in the last 30 days will appear here</Text>
               </View>
             )}
           </View>

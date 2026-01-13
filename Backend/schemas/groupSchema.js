@@ -11,7 +11,7 @@ const groupSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, required: true },
     city: { type: String, required: true },
-    category: { type: String, enum: ['Fun', 'Travel', 'Hobbies', 'Learning', 'Other'], default: 'Other' },
+    category: { type: String, enum: ['Fun', 'Travel', 'Hobbies', 'Learning', 'Food', 'Other'], default: 'Other' },
     imageUrl: { type: String, default: null },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     admins: { type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] },
