@@ -80,7 +80,7 @@ export default function Profile({ userId, isUsersProfile = false, onBack }: { us
                     const allGroups = groupsRes.groups;
                     const uid = userId ? userId : apiData.id;
                     setMyGroups(allGroups.filter((g: any) => String(g.createdBy) === String(uid)));
-                    setJoinedGroups(allGroups.filter((g: any) => (g.members || []).map((m: any) => String(m)).includes(String(uid))));
+                    setJoinedGroups(allGroups.filter((g: any) => (g.members || []).map((m: any) => String(m)).includes(String(uid)) && String(g.createdBy) !== String(uid)));
                 }
             } catch (e) {
                 // non-fatal
@@ -123,7 +123,7 @@ export default function Profile({ userId, isUsersProfile = false, onBack }: { us
                         const allGroups = groupsRes.groups;
                         const uid = userId ? userId : apiData.id;
                         setMyGroups(allGroups.filter((g: any) => String(g.createdBy) === String(uid)));
-                        setJoinedGroups(allGroups.filter((g: any) => (g.members || []).map((m: any) => String(m)).includes(String(uid))));
+                        setJoinedGroups(allGroups.filter((g: any) => (g.members || []).map((m: any) => String(m)).includes(String(uid)) && String(g.createdBy) !== String(uid)));
                     }
                 } catch (e) {
                     // ignore
@@ -173,10 +173,19 @@ export default function Profile({ userId, isUsersProfile = false, onBack }: { us
             }
         });
 
+        const unsubGroup = eventBus.on('groupMembershipChanged', async () => {
+            try {
+                await onRefresh();
+            } catch (e) {
+                console.error('Error refreshing profile after groupMembershipChanged', e);
+            }
+        });
+
         return () => {
             unsub2();
             unsub3();
             unsub4();
+            unsubGroup();
         };
     }, [onRefresh]);
 

@@ -302,7 +302,7 @@ export default function UploadEvent({ editEvent, onUpdateSuccess, onCancel, item
                             <Text className="text-white font-bold text-sm">
                                 {isUpdating ? "Saving..." : (editEvent ? "Update" : "Preview")}
                             </Text>
-                            {!isUpdating && <Ionicons name={editEvent ? "checkmark" : "arrow-forward"} size={16} color="white" />}
+                            {!isUpdating && editEvent && <Ionicons name="checkmark" size={16} color="white" />}
                         </TouchableOpacity>
                         {/* show cancel/back when parent provided onCancel and this is not an edit flow */}
                         {onCancel && !editEvent && (

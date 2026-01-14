@@ -105,7 +105,7 @@ export default function EventNext({ postUri, goback, onSuccess, name, content, l
                 <View className="flex-row items-center justify-between px-4 pt-4 pb-3">
                     <View className="flex-row items-center gap-2">
                         <TouchableOpacity onPress={goback} className="p-2 -ml-2" activeOpacity={0.7}>
-                            <Ionicons name="chevron-back" size={28} color="white" />
+                            <Text className="text-white">Back</Text>
                         </TouchableOpacity>
                         <Text className="text-white text-xl font-bold">Preview</Text>
                     </View>

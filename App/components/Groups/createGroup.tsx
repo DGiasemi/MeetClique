@@ -5,12 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { postAuth } from '@/utils/request';
 import { useRouter } from 'expo-router';
 
-export default function CreateGroup({ onCancel }: { onCancel?: () => void }) {
+export default function CreateGroup({ onCancel, editGroup, onUpdateSuccess }: { onCancel?: () => void, editGroup?: any, onUpdateSuccess?: () => void }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [city, setCity] = useState('Athens');
   const [category, setCategory] = useState('Fun');
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [isNewImage, setIsNewImage] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
   const [showCityPicker, setShowCityPicker] = useState<boolean>(false);
@@ -30,8 +32,24 @@ export default function CreateGroup({ onCancel }: { onCancel?: () => void }) {
       aspect: [4, 2],
       quality: 0.8,
     });
-    if (!res.canceled && res.assets && res.assets.length > 0) setImageUri(res.assets[0].uri);
+    if (!res.canceled && res.assets && res.assets.length > 0) {
+      setImageUri(res.assets[0].uri);
+      setIsNewImage(true);
+    }
   };
+
+  // If editing, populate fields
+  React.useEffect(() => {
+    if (editGroup) {
+      setName(editGroup.name || '');
+      setDescription(editGroup.description || '');
+      setCity(editGroup.city || 'Athens');
+      setCategory(editGroup.category || 'Fun');
+      setExistingImageUrl(editGroup.imageUrl ? editGroup.imageUrl : null);
+      setImageUri(null);
+      setIsNewImage(false);
+    }
+  }, [editGroup]);
 
   const fetchCitySuggestions = async (query: string) => {
     if (!query || query.trim() === '') {
@@ -73,23 +91,36 @@ export default function CreateGroup({ onCancel }: { onCancel?: () => void }) {
     setIsCreating(true);
     try {
       const formData = new FormData();
+      if (editGroup) formData.append('id', editGroup._id || editGroup.id);
       formData.append('name', name);
       formData.append('description', description);
       formData.append('city', city);
       formData.append('category', category);
-      if (imageUri) {
+      // Only append image if user picked a new local image (isNewImage)
+      if (isNewImage && imageUri) {
         formData.append('image', { uri: imageUri, name: 'group.jpg', type: 'image/jpeg' } as any);
       }
-      const res = await postAuth(router, '/creategroup', formData, { 'Content-Type': 'multipart/form-data' });
-      if (res && res.status === 200) {
-        Alert.alert('Success', 'Group created');
-        router.push('/tabs/groups');
+      const endpoint = editGroup ? '/updategroup' : '/creategroup';
+      let res;
+      if (isNewImage && imageUri) {
+        // send FormData when user picked a new image
+        res = await postAuth(router, endpoint, formData);
       } else {
-        Alert.alert('Error', res.message || 'Failed to create group');
+        // send JSON payload when no new image selected
+        const payload: any = { name, description, city, category };
+        if (editGroup) payload.id = editGroup._id || editGroup.id;
+        res = await postAuth(router, endpoint, payload);
       }
-    } catch (err) {
-      console.error(err);
-      Alert.alert('Error', 'Network or server error');
+      if (res && res.status === 200) {
+        Alert.alert('Success', editGroup ? 'Group updated' : 'Group created');
+        if (editGroup && onUpdateSuccess) onUpdateSuccess();
+        else router.push('/tabs/groups');
+      } else {
+        Alert.alert('Error', res.message || (editGroup ? 'Failed to update group' : 'Failed to create group'));
+      }
+    } catch (err: any) {
+      console.error('CreateGroup save error', err?.response?.data || err?.message || err);
+      Alert.alert('Error', err?.response?.data?.message || 'Network or server error');
     } finally {
       setIsCreating(false);
     }
@@ -103,11 +134,11 @@ export default function CreateGroup({ onCancel }: { onCancel?: () => void }) {
             <View className="bg-green-600/20 p-2 rounded-full">
               <Ionicons name={"people"} size={24} color="#22c55e" />
             </View>
-            <Text className="text-white text-xl font-bold">Create Group</Text>
+            <Text className="text-white text-xl font-bold">Group</Text>
           </View>
           <View className="flex-row items-center gap-3">
             <TouchableOpacity onPress={handleCreate} disabled={isCreating} className={`px-4 py-2 rounded-full ${isCreating ? 'bg-gray-600' : 'bg-blue-600'}`}>
-              <Text className="text-white font-bold text-sm">{isCreating ? 'Creating...' : 'Create'}</Text>
+              <Text className="text-white font-bold text-sm">{isCreating ? (editGroup ? 'Saving...' : 'Creating...') : (editGroup ? 'Save' : 'Create')}</Text>
             </TouchableOpacity>
             {onCancel && (
               <TouchableOpacity onPress={onCancel}>
@@ -196,7 +227,7 @@ export default function CreateGroup({ onCancel }: { onCancel?: () => void }) {
         </View>
 
           <Text className="text-gray-300 mb-2 mt-4">Image (optional)</Text>
-          {!imageUri ? (
+          {!(imageUri || existingImageUrl) ? (
             <TouchableOpacity
               className="w-full h-48 bg-gray-800/50 border-2 border-dashed border-gray-600 rounded-2xl flex items-center justify-center"
               onPress={pickImage}
@@ -210,7 +241,7 @@ export default function CreateGroup({ onCancel }: { onCancel?: () => void }) {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
-              <Image source={{ uri: imageUri }} style={{ width: '100%', height: 160, borderRadius: 12 }} />
+              <Image source={{ uri: imageUri || existingImageUrl || undefined }} style={{ width: '100%', height: 160, borderRadius: 12 }} />
             </TouchableOpacity>
           )}
       </ScrollView>
