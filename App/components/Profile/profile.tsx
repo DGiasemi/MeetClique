@@ -1,6 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 
 import { BackHandler, Image, Platform, ScrollView, Text, TouchableOpacity, Vibration, View, Dimensions, FlatList } from "react-native";
+import { URLS } from '@/constants/API';
 import React, { useCallback } from "react";
 import { getAuth, postAuth, putAuth } from "@/utils/request";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -539,7 +540,7 @@ export default function Profile({ userId, isUsersProfile = false, onBack }: { us
                                             <View style={{ width: Dimensions.get('window').width - 48 }} className="mr-4 bg-gray-800/20 rounded-xl p-4">
                                                 <TouchableOpacity onPress={() => router.push(`/tabs/groupDetails?id=${item._id}`)}>
                                                     {item.imageUrl ? (
-                                                        <Image source={{ uri: item.imageUrl }} className="w-full h-40 rounded-lg" />
+                                                        <Image source={{ uri: `${URLS.api}/getgroupimage?id=${item._id}` }} className="w-full h-40 rounded-lg" />
                                                     ) : (
                                                         <View className="w-full h-40 rounded-lg bg-gray-700/40 items-center justify-center">
                                                             <Ionicons name="people-outline" size={36} color="#9CA3AF" />
@@ -570,7 +571,7 @@ export default function Profile({ userId, isUsersProfile = false, onBack }: { us
                                             <View style={{ width: Dimensions.get('window').width - 48 }} className="mr-4 bg-gray-800/20 rounded-xl p-4">
                                                 <TouchableOpacity onPress={() => router.push(`/tabs/groupDetails?id=${item._id}`)}>
                                                     {item.imageUrl ? (
-                                                        <Image source={{ uri: item.imageUrl }} className="w-full h-40 rounded-lg" />
+                                                        <Image source={{ uri: `${URLS.api}/getgroupimage?id=${item._id}` }} className="w-full h-40 rounded-lg" />
                                                     ) : (
                                                         <View className="w-full h-40 rounded-lg bg-gray-700/40 items-center justify-center">
                                                             <Ionicons name="people-outline" size={36} color="#9CA3AF" />

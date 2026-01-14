@@ -18,6 +18,9 @@ export default function Home() {
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [pastEvents, setPastEvents] = useState<any[]>([]);
   const [activeGroups, setActiveGroups] = useState<any[]>([]);
+  const categories = ['All Categories','Fun','Travel','Hobbies','Learning','Food','Other'];
+  const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
+  const [showCategoryPicker, setShowCategoryPicker] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [loadingAllEvents, setLoadingAllEvents] = useState(true);
   const [loadingGroups, setLoadingGroups] = useState(true);
@@ -274,6 +277,7 @@ export default function Home() {
 
   useAppServices();
 
+  const visibleGroups = selectedCategory === 'All Categories' ? activeGroups : activeGroups.filter(g => g.category === selectedCategory);
   return (
     <View className="flex-1 bg-background">
       {/* Header */}
@@ -401,28 +405,53 @@ export default function Home() {
 
           {/* Active Groups Section */}
           <View className="mt-6">
-            <View className="flex-row items-center gap-2 px-4 mb-3">
-              <Ionicons name="people" size={22} color="#eb3678" />
-              <Text className="text-white text-xl font-bold">Active Groups</Text>
-              {activeGroups.length > 0 && (
-                <View className="bg-blue-600/20 px-2 py-1 rounded-full">
-                  <Text className="text-blue-400 text-xs font-semibold">{activeGroups.length}</Text>
+              <View className="px-4 mb-2" style={{ position: 'relative' }}>
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-2">
+                    <Ionicons name="people" size={22} color="#eb3678" />
+                    <Text className="text-white text-xl font-bold">Active Groups</Text>
+                    {visibleGroups.length > 0 && (
+                      <View className="bg-blue-600/20 px-2 py-1 rounded-full">
+                        <Text className="text-blue-400 text-xs font-semibold">{visibleGroups.length}</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={{ position: 'relative' }}>
+                    <TouchableOpacity onPress={() => setShowCategoryPicker(!showCategoryPicker)} className="flex-row items-center">
+                      <Text className="text-gray-300 mr-2">{selectedCategory}</Text>
+                      <Ionicons name="chevron-down" size={18} color="#9CA3AF" />
+                    </TouchableOpacity>
+
+                    {showCategoryPicker && (
+                      <View style={{ position: 'absolute', top: '100%', right: 0, width: 220, zIndex: 1000 }}>
+                        <View className="bg-gray-900 rounded-xl p-2 shadow-lg" style={{ elevation: 20 }}>
+                          <ScrollView style={{ maxHeight: 180 }}>
+                            {categories.map((c) => (
+                              <TouchableOpacity key={c} onPress={() => { setSelectedCategory(c); setShowCategoryPicker(false); }} className="px-3 py-2">
+                                <Text className={`${selectedCategory === c ? 'text-purple-400 font-semibold' : 'text-gray-300'}`}>{c}</Text>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      </View>
+                    )}
+                  </View>
                 </View>
-              )}
-            </View>
+              </View>
             {loadingGroups ? (
               <View className="h-48 justify-center items-center">
                 <ActivityIndicator size="large" color="#8b5cf6" />
                 <Text className="text-gray-400 mt-3 text-sm">Loading groups...</Text>
               </View>
-            ) : activeGroups.length > 0 ? (
+            ) : visibleGroups.length > 0 ? (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 className="px-4"
                 contentContainerStyle={{ gap: 16 }}
               >
-                {activeGroups.map((group) => (
+                {visibleGroups.map((group) => (
                   <View key={group._id} className="w-80">
                     <Group group={group} showTop={true} />
                   </View>
