@@ -27,8 +27,10 @@ router.post('/', async (req, res) => {
     user = user.result;
 
     const data = {
+        chatId: chatID,
         chat: result.result.chatName || user.username,
         message: {
+            senderId: userId,
             content: content,
             senderUsername: user.username,
             timestamp: timestamp,

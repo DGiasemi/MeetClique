@@ -10,6 +10,8 @@ const updateUserRoute = require('./User/updateUserRoute');
 const setProfilePicRoute = require('./User/setProfilePicRoute');
 const getProfilePicRoute = require('./User/getProfilePicRoute');
 const getOnlineStatusRoute = require('./User/getOnlineStatusRoute');
+const blockUserRoute = require('./User/blockUserRoute');
+const reportUserRoute = require('./User/reportUserRoute');
 
 const addUserPushTokenRoute = require('./User/Token/addUserPushTokenRoute');
 
@@ -52,6 +54,8 @@ router.use('/getuser', authenticationDetails, getUserRoute);
 router.use('/finduser', authenticationDetails, findUserRoute);
 router.use('/updateuser', authenticationDetails, updateUserRoute);
 router.use('/getonlinestatus', getOnlineStatusRoute);
+router.use('/blockuser', authenticationDetails, blockUserRoute);
+router.use('/reportuser', authenticationDetails, reportUserRoute);
 // User Token routes
 router.use('/adduserpushtoken', authenticationDetails, addUserPushTokenRoute);
 // Friends routes

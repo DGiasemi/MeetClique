@@ -1,4 +1,4 @@
-import { BackHandler, KeyboardAvoidingView, Text, TouchableOpacity, View, SafeAreaView, Animated, Platform, Image } from 'react-native';
+import { BackHandler, KeyboardAvoidingView, Text, TouchableOpacity, View, SafeAreaView, Animated, Platform, Image, Modal } from 'react-native';
 import { FlatList, TextInput } from 'react-native-gesture-handler';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { getAuth, postAuth } from '@/utils/request';
@@ -8,8 +8,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import Profile from '../Profile/profile';
 import log from '@/utils/logger';
+import { Theme } from '@/constants/Theme';
 import { TabBarVisibilityContext } from '@/app/tabs/(tabs)/_layout';
 import { LinearGradient } from 'expo-linear-gradient';
+import { socketService } from '@/utils/socketService';
 
 interface ChatProps {
     user: {
@@ -24,9 +26,13 @@ export default function Chat({ user, onExit }: ChatProps) {
     const [message, setMessage] = React.useState<string>("");
     const [messages, setMessages] = React.useState<any[]>([]);
     const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+    const [showMenu, setShowMenu] = React.useState(false);
+    const [isBlocked, setIsBlocked] = React.useState<boolean>(false);
+    const [isUserReported, setIsUserReported] = React.useState<boolean>(false);
     const [storedData, setStoredData] = React.useState<any>({});
     const [previousMessageGroupId, setPreviousMessageGroupId] = React.useState<string | null>(null);
     const [loadingMore, setLoadingMore] = React.useState(false);
+    const [currentChatId, setCurrentChatId] = React.useState<string | undefined>(user.chatId);
 
     const { setVisible: setNavBarVisible } = React.useContext(TabBarVisibilityContext);
     const flatListRef = React.useRef<FlatList>(null);
@@ -35,6 +41,10 @@ export default function Chat({ user, onExit }: ChatProps) {
     const router = useRouter();
 
     const sendMessage = async () => {
+        if (isBlocked) {
+            log.warn('Cannot send message: user is blocked');
+            return;
+        }
         if (message.trim() === "") {
             log.warn("Attempted to send an empty message");
             return;
@@ -93,13 +103,15 @@ export default function Chat({ user, onExit }: ChatProps) {
     useEffect(() => {
         setNavBarVisible(false);
         const fetchData = async () => {
-            const router = useRouter();
             const data = await getAuth(router, '/getchat?' + (user.chatId ? 'chatId=' + user.chatId : 'memberId=' + user.id));
-            setPreviousMessageGroupId(data.messages.previousMessageGroupId || null);
             if (!data) {
                 console.error('Failed to fetch chat data');
                 return;
             }
+            if (data._id) {
+                setCurrentChatId(data._id);
+            }
+            setPreviousMessageGroupId(data.messages.previousMessageGroupId || null);
             setStoredData(JSON.parse(await AsyncStorage.getItem('userData') || '{}'));
             setMessages(data.messages.messages.reverse() || []);
             await fetchPreviousMessages(data.messages.previousMessageGroupId || null);
@@ -108,6 +120,21 @@ export default function Chat({ user, onExit }: ChatProps) {
         fetchData();
         return () => setNavBarVisible(true);
     }, []);
+        useEffect(() => {
+        if (!currentChatId) return;
+
+        const handleNewMessage = (data: any) => {
+            if (data.chatId === currentChatId) {
+                setMessages((prevMessages) => [data.message, ...prevMessages]);
+            }
+        };
+
+        socketService.on('newMessage', handleNewMessage);
+
+        return () => {
+            socketService.off('newMessage', handleNewMessage);
+        };
+    }, [currentChatId]);
 
     useFocusEffect(
         useCallback(() => {
@@ -312,13 +339,86 @@ export default function Chat({ user, onExit }: ChatProps) {
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={{ padding: 8, marginRight: -8 }}
-                        onPress={() => { }}
+                        onPress={() => { setShowMenu(true); }}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                         <Ionicons name="ellipsis-vertical" size={22} color="rgba(156, 163, 175, 1)" />
                     </TouchableOpacity>
+                    {/* Menu modal */}
+                    <Modal transparent visible={showMenu} animationType="fade">
+                        <TouchableOpacity
+                            style={{ flex: 1 }}
+                            activeOpacity={1}
+                            onPress={() => setShowMenu(false)}
+                        >
+                            <View style={{ position: 'absolute', right: 12, top: 64 }}>
+                                <View style={{ backgroundColor: 'rgba(30,30,40,0.98)', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setShowMenu(false);
+                                            setIsProfileOpen(true);
+                                        }}
+                                        style={{ paddingHorizontal: 16, paddingVertical: 12 }}
+                                    >
+                                        <Text style={{ color: 'white' }}>View profile</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={async () => {
+                                            setShowMenu(false);
+                                            const blockNow = !isBlocked;
+                                            try {
+                                                const res = await postAuth(router, '/blockuser', { targetId: user.id, block: blockNow });
+                                                if (res && res.status === 200) {
+                                                    setIsBlocked(blockNow);
+                                                } else {
+                                                    log.error('Failed to update block state', res);
+                                                }
+                                            } catch (e) {
+                                                log.error('Block API error', e);
+                                            }
+                                        }}
+                                        style={{ paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.03)' }}
+                                    >
+                                        <Text style={{ color: 'white' }}>{isBlocked ? 'Unblock user' : 'Block user'}</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={async () => {
+                                            setShowMenu(false);
+                                            if (isUserReported) return;
+                                            try {
+                                                const res = await postAuth(router, '/reportuser', { targetId: user.id, reason: 'inappropriate', details: '' });
+                                                if (res && res.status === 200) {
+                                                    setIsUserReported(true);
+                                                } else {
+                                                    log.error('Failed to report user', res);
+                                                }
+                                            } catch (e) {
+                                                log.error('Report API error', e);
+                                            }
+                                        }}
+                                        disabled={isUserReported}
+                                        style={{ paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.03)', opacity: isUserReported ? 0.6 : 1 }}
+                                    >
+                                        <Text style={{ color: 'white' }}>{isUserReported ? 'Reported' : 'Report'}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    </Modal>
                 </View>
             </LinearGradient>
+
+            {/* Blocked banner */}
+            {isBlocked && (
+                <View style={{ backgroundColor: 'rgba(239,68,68,0.08)', paddingVertical: 8, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(239,68,68,0.18)' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={{ color: 'rgba(255,255,255,0.95)', flex: 1, marginRight: 8 }}>This user is blocked. Messages are disabled.</Text>
+                        <TouchableOpacity onPress={() => setIsBlocked(false)} style={{ paddingHorizontal: 8, paddingVertical: 4, minWidth: 72, alignItems: 'center' }}>
+                            <Text style={{ color: Theme.primary, fontWeight: '600' }}>Unblock</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
 
             <View className='flex-1 justify-end items-left h-full px-4'>
                 <KeyboardAvoidingView
@@ -378,9 +478,9 @@ export default function Chat({ user, onExit }: ChatProps) {
                         <Animated.View style={{ transform: [{ scale: sendButtonScale }] }}>
                             <TouchableOpacity
                                 onPress={sendMessage}
-                                disabled={message.trim().length === 0}
+                                disabled={message.trim().length === 0 || isBlocked}
                                 style={{
-                                    opacity: message.trim().length === 0 ? 0.4 : 1,
+                                    opacity: (message.trim().length === 0 || isBlocked) ? 0.4 : 1,
                                 }}
                             >
                                 <LinearGradient

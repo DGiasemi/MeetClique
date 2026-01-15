@@ -1,5 +1,6 @@
 const messageGroupSchema = require('../../schemas/messageGroupSchema');
 const chatSchema = require('../../schemas/chatSchema');
+const userSchema = require('../../schemas/userSchema');
 const HttpStatusCode = require('http-status-codes');
 const { getMessageGroup, pushMessage } = require('../../cache/messagesCache');
 const { encryptMessage, getHmacIndex } = require('../../utils/messageEncryption');
@@ -26,6 +27,25 @@ async function sendMessage(userID, chatID, content, timestamp) {
         const memberIds = chat.members.map(member => member._id.toString());  // to ensure the user is a member of the chat
         if (!memberIds.includes(userID)) {
             return { code: StatusCodes.FORBIDDEN, result: 'You are not a member of this chat' };
+        }
+
+        // Check block relationships: if sender has blocked any recipient OR any recipient has blocked sender, forbid sending
+        const sender = await userSchema.findById(userID);
+        if (!sender) {
+            return { code: StatusCodes.NOT_FOUND, result: 'Sender not found' };
+        }
+        const otherMemberIds = memberIds.filter(id => id !== userID);
+        if (otherMemberIds.length > 0) {
+            const otherUsers = await userSchema.find({ _id: { $in: otherMemberIds } });
+            // if sender has blocked recipient OR recipient has blocked sender -> forbid
+            for (const other of otherUsers) {
+                const otherIdStr = String(other._id);
+                const senderBlockedOther = sender.blockedUsers && sender.blockedUsers.map(String).includes(otherIdStr);
+                const otherBlockedSender = other.blockedUsers && other.blockedUsers.map(String).includes(String(userID));
+                if (senderBlockedOther || otherBlockedSender) {
+                    return { code: StatusCodes.FORBIDDEN, result: 'Messaging blocked between these users' };
+                }
+            }
         }
         if (!messageGroup) { // if not found in cache, fetch from database (chat has been retrieved from database)
             messageGroup = chat.messages;
