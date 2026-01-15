@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const HttpStatusCode = require('http-status-codes');
-const setBlockUser = require('../../../db/User/blockUserDb');
+const setBlockUser = require('../../db/User/blockUserDb');
 
 // body: { targetId: string, block: boolean }
 router.post('/', async (req, res) => {

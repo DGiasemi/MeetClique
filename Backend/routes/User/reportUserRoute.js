@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const createUserReport = require('../../../db/User/reportUserDb');
+const createUserReport = require('../../db/User/reportUserDb');
 
 // body: { targetId: string, reason?: string, details?: string }
 router.post('/', async (req, res) => {
