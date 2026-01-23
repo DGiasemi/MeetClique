@@ -28,16 +28,6 @@ const customMapStyle = [
         elementType: "labels",
         stylers: [{ visibility: "off" }],
     },
-    // {
-    //     featureType: "water",
-    //     elementType: "geometry",
-    //     stylers: [{ color: WATER_COLOR }],
-    // },
-    // {
-    //     featureType: "landscape",
-    //     elementType: "geometry",
-    //     stylers: [{ color: LAND_COLOR }],
-    // },
     
 ];
 

@@ -23,7 +23,6 @@ const getAuth = async (router: any, endpoint: string) => {
         const json = await response.json();
 
         if (!response.ok) {
-            //ToastAndroid.show('An error occurred: ' + `${API_BASE_URL}${endpoint}`, ToastAndroid.LONG);
             if (json.unauthorized) {
                 SecureStore.deleteItemAsync('userToken');
                 log.error('Unauthorized access, redirecting to login');
@@ -46,7 +45,6 @@ const postAuth = async (router: any, endpoint: string, body?: any, headers?: any
         const final = response.data;
         final.status = response.status;
         if (response.status !== 200) {
-            //ToastAndroid.show('An error occurred: ' + `${API_BASE_URL}${endpoint}`, ToastAndroid.LONG);
             if (response.data.unauthorized) {
                 SecureStore.deleteItemAsync('userToken');
                 log.error('Unauthorized access, redirecting to login');
@@ -71,7 +69,6 @@ const deleteAuth = async (router: any, endpoint: string, body?: any) => {
         const final = response.data;
         final.status = response.status;
         if (response.status !== 200) {
-            //ToastAndroid.show(response.data.message || 'An error occurred', ToastAndroid.LONG);
             if (response.data.unauthorized) {
                 SecureStore.deleteItemAsync('userToken');
                 log.error('Unauthorized access, redirecting to login');
@@ -95,7 +92,6 @@ const putAuth = async (router: any, endpoint: string, body?: any, headers?: any)
         const final = response.data;
         final.status = response.status;
         if (response.status !== 200) {
-            //ToastAndroid.show(response.data.message || 'An error occurred', ToastAndroid.LONG);
             if (response.data.unauthorized) {
                 SecureStore.deleteItemAsync('userToken');
                 log.error('Unauthorized access, redirecting to login');

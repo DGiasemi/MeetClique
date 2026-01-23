@@ -9,8 +9,7 @@ const path = require('path');
 const { setPrivateKey, decryptPrivateKey } = require('../../cache/authPrivateKeyStorage');
 
 router.post('/', async (req, res) => {
-  //res.status(501).send('Registrations are currently disabled.');
-  //return;
+  
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {

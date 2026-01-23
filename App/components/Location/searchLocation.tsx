@@ -6,7 +6,6 @@ import { TextInput } from "react-native-gesture-handler";
 import { getAuth } from "@/utils/request";
 import { useRouter } from "expo-router";
 import * as Location from 'expo-location';
-// AddLocation UI removed: only search is available now
 
 export default function SearchLocation({ setLocation, goback }: { setLocation: (location: any) => void, goback: () => void }) {
 
@@ -36,7 +35,6 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
         ]).start();
     }, []);
 
-    // Get user's current location to bias search results
     useEffect(() => {
         (async () => {
             try {
@@ -55,19 +53,6 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
         })();
     }, []);
 
-    const updateLocationAndDistances = async (location: Location.LocationObject | null) => {
-        const _userLocation = location;
-        if (_userLocation === null) {
-            console.log("Unable to get user location");
-            return;
-        }
-        const newLocation = {
-            latitude: _userLocation.coords.latitude,
-            longitude: _userLocation.coords.longitude,
-        };
-        setUserLocation(newLocation);
-    };
-
     const searchLocation = async (query: string) => {
         setIsSearching(true);
         try {
@@ -77,7 +62,7 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
                 return;
             }
 
-            // Use OpenStreetMap Nominatim: do a nearby-biased query plus a broader query,
+            // Use OpenStreetMap Nominatim: do a nearby-biased query plus a broader query
             // then merge results so nearby items are prioritized but other matches still appear.
             const encoded = encodeURIComponent(query);
             const base = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encoded}`;
@@ -92,7 +77,7 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
                 const minLat = lat - delta;
                 const maxLon = lon + delta;
                 const maxLat = lat + delta;
-                localUrl = `${base}&limit=8&viewbox=${minLon},${minLat},${maxLon},${maxLat}`; // no bounded param so it's a bias
+                localUrl = `${base}&limit=8&viewbox=${minLon},${minLat},${maxLon},${maxLat}`;
             }
 
             // Broader URL limited to Greece to keep results relevant
@@ -171,8 +156,6 @@ export default function SearchLocation({ setLocation, goback }: { setLocation: (
 
         return () => clearTimeout(delaySearch);
     }, [locationValue]);
-
-    // Note: manual "Add Location" flow removed — user must pick from search results.
 
     return (
         <View className="h-full bg-background">
